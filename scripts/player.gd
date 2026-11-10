@@ -2,17 +2,24 @@ extends CharacterBody3D
 
 signal attacked
 signal skill_used
+signal coins_changed(total: int)
 
 @export var speed: float = 5.5
 @export var jump_velocity: float = 5.0
 @export var gravity: float = 14.0
 @export var kill_height: float = -20.0
 
+var coins_collected: int = 0
 var _spawn_position := Vector3.ZERO
 
 
 func _ready() -> void:
 	_spawn_position = global_position
+
+func add_coins(amount: int) -> void:
+	coins_collected += amount
+	coins_changed.emit(coins_collected)
+	print("Coins collected: %d (+%d)" % [coins_collected, amount])
 
 func _physics_process(delta: float) -> void:
 	if global_position.y < kill_height:

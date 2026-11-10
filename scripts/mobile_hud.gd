@@ -12,12 +12,15 @@ const IDLE_ALPHA := 0.8
 @onready var attack_button: Control = $Root/AttackButton
 @onready var jump_button: Control = $Root/JumpButton
 @onready var skill_button: Control = $Root/SkillButton
+@onready var coin_panel: Control = $Root/CoinPanel
+@onready var coins_label: Label = $Root/CoinPanel/CoinLabel
 
 var _buttons: Dictionary = {}
 var _button_touches: Dictionary = {}
 var _joystick_touch := -1
 var _joystick_center := Vector2.ZERO
 var _move_vector := Vector2.ZERO
+var _coin_tween: Tween
 
 
 func _ready() -> void:
@@ -34,6 +37,7 @@ func _ready() -> void:
 		node.pivot_offset = node.size * 0.5
 		_set_button_pressed(action_name, false)
 	joystick_base.visible = false
+	coins_label.text = "Coins: 0"
 
 func _exit_tree() -> void:
 	_reset_all()
@@ -41,6 +45,16 @@ func _exit_tree() -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		_reset_all()
+
+func update_coins(amount: int) -> void:
+	coins_label.text = "Coins: %d" % amount
+	if _coin_tween != null and _coin_tween.is_valid():
+		_coin_tween.kill()
+	coin_panel.pivot_offset = coin_panel.size * 0.5
+	coin_panel.scale = Vector2.ONE
+	_coin_tween = create_tween()
+	_coin_tween.tween_property(coin_panel, "scale", Vector2(1.15, 1.15), 0.08)
+	_coin_tween.tween_property(coin_panel, "scale", Vector2.ONE, 0.12)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
