@@ -40,6 +40,8 @@ jobs:
         run: |
           "$GODOT" --headless --editor --path . --quit
           "$GODOT" --headless --path . --quit-after 3
+      - name: Install Godot Android build template
+        run: "$GODOT" --headless --editor --path . --install-android-build-template
       - name: Export debug APK
         run: mkdir -p artifacts && "$GODOT" --headless --path . --editor --export-debug "Android" artifacts/LostTreasureKingdom-debug.apk
       - name: Verify APK
