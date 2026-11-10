@@ -34,6 +34,32 @@ func _run() -> void:
 	assert(current_scene.get_node("WorldEnvironment").environment.sky.sky_material is ProceduralSkyMaterial)
 	assert(current_scene.get_node("Path") is CSGBox3D)
 	assert(current_scene.get_node("Castle/CastleKeep") is CSGBox3D)
+	var hud := current_scene.get_node("MobileHUD")
+	assert(hud != null, "Main scene should instantiate the mobile HUD")
+	for action_name in ["attack", "jump", "skill"]:
+		assert(InputMap.has_action(action_name), "HUD action should be registered: " + action_name)
+
+	var attack_center: Vector2 = hud.attack_button.get_global_rect().get_center()
+	hud._on_touch_pressed(20, attack_center)
+	assert(Input.is_action_pressed("attack"), "Touching Attack should press its input action")
+	hud._on_touch_released(20)
+	assert(not Input.is_action_pressed("attack"), "Releasing Attack should release its input action")
+	var skill_center: Vector2 = hud.skill_button.get_global_rect().get_center()
+	hud._on_touch_pressed(22, skill_center)
+	assert(Input.is_action_pressed("skill"), "Touching Skill should press its input action")
+	hud._on_touch_released(22)
+	assert(not Input.is_action_pressed("skill"), "Releasing Skill should release its input action")
+
+	hud._on_touch_pressed(21, Vector2(100, 300))
+	assert(hud.joystick_base.visible, "Joystick should appear at the initiating touch location")
+	hud._update_joystick(Vector2(160, 300))
+	assert(Input.get_action_strength("move_right") > 0.5, "Dragging joystick right should press move_right")
+	hud._on_touch_released(21)
+	assert(not hud.joystick_base.visible, "Joystick should hide when touch ends")
+	assert(not Input.is_action_pressed("move_right"), "Joystick release should clear movement input")
+
+	assert(player.has_signal("attacked"), "Player should expose an attacked signal")
+	assert(player.has_signal("skill_used"), "Player should expose a skill-used signal")
 
 	for _frame in range(30):
 		await physics_frame
@@ -45,5 +71,10 @@ func _run() -> void:
 	Input.action_release("move_forward")
 	assert(player.global_position.z < initial_z - 0.2, "Keyboard forward input should move the player down the path")
 
-	print("Phase 1 gameplay smoke test passed")
+	player.global_position = Vector3(0, -21, 12)
+	await physics_frame
+	assert(player.global_position.y > player.kill_height, "Falling below the kill plane should respawn the player")
+	assert(absf(player.global_position.z - 12.0) < 0.1, "Respawn should return the player to the start")
+
+	print("HUD, movement, and fall recovery test passed")
 	quit()

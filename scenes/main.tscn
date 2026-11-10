@@ -1,6 +1,7 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/mobile_hud.tscn" id="2_hud"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial"]
 sky_top_color = Color(0.11, 0.34, 0.68, 1)
@@ -51,6 +52,15 @@ roughness = 0.72
 radius = 0.42
 height = 1.8
 
+[sub_resource type="BoxShape3D" id="WallShapeX"]
+size = Vector3(122, 20, 2)
+
+[sub_resource type="BoxShape3D" id="WallShapeZ"]
+size = Vector3(2, 20, 100)
+
+[sub_resource type="BoxShape3D" id="CastleShape"]
+size = Vector3(15, 12, 5.6)
+
 [node name="Main" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -100,6 +110,38 @@ position = Vector3(0, 2, 2.58)
 size = Vector3(3.2, 4, 0.22)
 material = SubResource("PathMaterial")
 
+[node name="CastleCollision" type="StaticBody3D" parent="Castle"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Castle/CastleCollision"]
+position = Vector3(0, 6, 0)
+shape = SubResource("CastleShape")
+
+[node name="Boundary" type="Node3D" parent="."]
+
+[node name="WallNorth" type="StaticBody3D" parent="Boundary"]
+position = Vector3(0, 10, -50.5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Boundary/WallNorth"]
+shape = SubResource("WallShapeX")
+
+[node name="WallSouth" type="StaticBody3D" parent="Boundary"]
+position = Vector3(0, 10, 50.5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Boundary/WallSouth"]
+shape = SubResource("WallShapeX")
+
+[node name="WallEast" type="StaticBody3D" parent="Boundary"]
+position = Vector3(60.5, 10, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Boundary/WallEast"]
+shape = SubResource("WallShapeZ")
+
+[node name="WallWest" type="StaticBody3D" parent="Boundary"]
+position = Vector3(-60.5, 10, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Boundary/WallWest"]
+shape = SubResource("WallShapeZ")
+
 [node name="Player" type="CharacterBody3D" parent="."]
 position = Vector3(0, 0, 12)
 script = ExtResource("1_player")
@@ -122,6 +164,8 @@ spring_length = 8.0
 
 [node name="Camera3D" type="Camera3D" parent="Player/SpringArm3D"]
 current = true
+
+[node name="MobileHUD" parent="." instance=ExtResource("2_hud")]
 
 [node name="TreeWestNear" type="Node3D" parent="."]
 position = Vector3(-12, 0, 7)

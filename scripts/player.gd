@@ -1,17 +1,25 @@
 extends CharacterBody3D
 
+signal attacked
+signal skill_used
+
 @export var speed: float = 5.5
 @export var jump_velocity: float = 5.0
 @export var gravity: float = 14.0
-var move_input := Vector2.ZERO
-var joystick_origin := Vector2.ZERO
-var active_touch := -1
-var joystick_radius := 95.0
+@export var kill_height: float = -20.0
+
+var _spawn_position := Vector3.ZERO
+
+
+func _ready() -> void:
+	_spawn_position = global_position
 
 func _physics_process(delta: float) -> void:
+	if global_position.y < kill_height:
+		velocity = Vector3.ZERO
+		global_position = _spawn_position
+
 	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
-	if input == Vector2.ZERO:
-		input = move_input
 	var direction := Vector3(input.x, 0, input.y).rotated(Vector3.UP, $SpringArm3D.rotation.y)
 	if direction.length() > 1.0:
 		direction = direction.normalized()
@@ -21,18 +29,10 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= gravity * delta
 	elif Input.is_action_just_pressed("jump"):
 		velocity.y = jump_velocity
-	move_and_slide()
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventScreenTouch:
-		if event.pressed and event.position.x < get_viewport().get_visible_rect().size.x * 0.55 and active_touch == -1:
-			active_touch = event.index
-			joystick_origin = event.position
-			move_input = Vector2.ZERO
-		elif not event.pressed and event.index == active_touch:
-			active_touch = -1
-			move_input = Vector2.ZERO
-	elif event is InputEventScreenDrag and event.index == active_touch:
-			var drag_delta: Vector2 = event.position - joystick_origin
-			move_input = drag_delta.limit_length(joystick_radius) / joystick_radius
-			move_input.y = -move_input.y
+	if InputMap.has_action("attack") and Input.is_action_just_pressed("attack"):
+		attacked.emit()
+	if InputMap.has_action("skill") and Input.is_action_just_pressed("skill"):
+		skill_used.emit()
+
+	move_and_slide()
