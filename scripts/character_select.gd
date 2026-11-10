@@ -30,4 +30,4 @@ func _on_character_pressed(char_name: String) -> void:
 	var main_scene_path = "res://scenes/main.tscn"
 	var err = get_tree().change_scene_to_file(main_scene_path)
 	if err != OK:
-		print("خطأ: لم يتم العثور على مشهد main.tscn!")
+		print("Error: main.tscn not found!")

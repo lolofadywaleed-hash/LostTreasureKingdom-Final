@@ -1,4 +1,4 @@
-name: Godot Android APK
+name: Build Android APK
 on:
   push:
     branches: [main]
@@ -35,7 +35,8 @@ jobs:
       - name: Prepare temporary debug keystore and Android SDK settings
         run: |
           mkdir -p "$HOME/.config/godot"
-          keytool -keyalg RSA -genkeypair -alias androiddebugkey -keypass android -keystore debug.keystore -storepass android -dname "CN=Android Debug,O=Android,C=US" -validity 9999
+          rm -f debug.keystore
+          keytool -keyalg RSA -genkeypair -alias androiddebugkey -keypass androiduser -keystore debug.keystore -storepass androiduser -dname "CN=Android Debug,O=Android,C=US" -validity 9999
           printf 'export/android/android_sdk_path = "%s"\nexport/android/java_sdk_path = "%s"\n' "$ANDROID_HOME" "$JAVA_HOME" > "$HOME/.config/godot/editor_settings-4.tres"
       - name: Import, validate, and run tests
         run: |
@@ -44,15 +45,16 @@ jobs:
           godot --headless --path . --script res://tests/smoke_test.gd
           godot --headless --path . --script res://tests/character_select_test.gd
       - name: Export debug APK
-        run: mkdir -p build && godot --headless --verbose --export-debug "Android" build/game.apk
+        run: mkdir -p builds && godot --headless --verbose --export-debug "Android" builds/LostTreasureKingdom.apk
       - name: Verify APK
         run: |
-          test -s build/game.apk
-          unzip -tq build/game.apk
-          unzip -Z1 build/game.apk | grep -qx 'AndroidManifest.xml'
-          unzip -Z1 build/game.apk | grep -Eq '^lib/arm64-v8a/[^/]+\.so$'
+          test -s builds/LostTreasureKingdom.apk
+          unzip -tq builds/LostTreasureKingdom.apk
+          unzip -Z1 builds/LostTreasureKingdom.apk | grep -qx 'AndroidManifest.xml'
+          unzip -Z1 builds/LostTreasureKingdom.apk | grep -Eq '^lib/arm64-v8a/[^/]+\.so$'
+          unzip -Z1 builds/LostTreasureKingdom.apk | grep -Eq '^lib/armeabi-v7a/[^/]+\.so$'
       - uses: actions/upload-artifact@v4
         with:
-          name: LostTreasureKingdom-Android-debug
-          path: build/game.apk
+          name: LostTreasureKingdom-APK
+          path: builds/LostTreasureKingdom.apk
           retention-days: 14
