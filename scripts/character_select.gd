@@ -1,33 +1,31 @@
 extends Control
 
 func _ready() -> void:
-	var container = $HBoxContainer
-	if not container:
+	var container := get_node_or_null("MarginContainer/VBoxContainer/HBoxContainer") as HBoxContainer
+	if container == null:
+		push_error("Character selection is missing its hero-card container.")
 		return
 
-	var characters = [
+	var characters := [
 		{"name": "Lolo", "path": "res://assets/characters/lolo.png"},
 		{"name": "AlSayed", "path": "res://assets/characters/alsayed.png"},
 		{"name": "Fady", "path": "res://assets/characters/fady.png"}
 	]
 
 	for char_data in characters:
-		var btn = TextureButton.new()
-		btn.name = "Btn_" + char_data["name"]
+		var button := TextureButton.new()
+		button.name = "Btn_" + char_data["name"]
+		button.texture_normal = load(char_data["path"])
+		button.ignore_texture_size = true
+		button.custom_minimum_size = Vector2(250, 400)
+		button.size_flags_horizontal = 3
+		button.size_flags_vertical = 3
+		button.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_COVERED
+		button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		button.pressed.connect(_on_character_pressed.bind(char_data["name"]))
+		container.add_child(button)
 
-		var texture = load(char_data["path"])
-		if texture:
-			btn.texture_normal = texture
-
-		btn.ignore_texture_size = true
-		btn.custom_minimum_size = Vector2(200, 300)
-		btn.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
-
-		btn.pressed.connect(_on_character_pressed.bind(char_data["name"]))
-		container.add_child(btn)
-
-func _on_character_pressed(char_name: String) -> void:
-	var main_scene_path = "res://scenes/main.tscn"
-	var err = get_tree().change_scene_to_file(main_scene_path)
+func _on_character_pressed(_char_name: String) -> void:
+	var err := get_tree().change_scene_to_file("res://scenes/main.tscn")
 	if err != OK:
-		print("Error: main.tscn not found!")
+		push_error("Could not open res://scenes/main.tscn (error %s)." % err)
