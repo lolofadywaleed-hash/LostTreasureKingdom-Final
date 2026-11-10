@@ -1,7 +1,8 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/mobile_hud.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/main.gd" id="3"]
 
 [sub_resource type="PlaneMesh" id="FloorMesh"]
 size = Vector2(80, 80)
@@ -15,6 +16,7 @@ radius = 0.35
 height = 1.8
 
 [node name="Main" type="Node3D"]
+script = ExtResource("3")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 rotation = Vector3(-0.9, -0.6, 0)
