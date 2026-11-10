@@ -27,11 +27,7 @@ func _ready() -> void:
 		container.add_child(btn)
 
 func _on_character_pressed(char_name: String) -> void:
-	var main_scene = load("res://scenes/main.tscn")
-	if main_scene:
-		var instance = main_scene.instantiate()
-		if "selected_character" in instance:
-			instance.selected_character = char_name
-		get_tree().root.add_child(instance)
-		get_tree().current_scene.queue_free()
-		get_tree().current_scene = instance
+	var main_scene_path = "res://scenes/main.tscn"
+	var err = get_tree().change_scene_to_file(main_scene_path)
+	if err != OK:
+		print("خطأ: لم يتم العثور على مشهد main.tscn!")

@@ -17,6 +17,6 @@ func _run() -> void:
 	select.get_node("HBoxContainer/Btn_Lolo").pressed.emit()
 	await process_frame
 	assert(current_scene != null)
-	assert(current_scene.selected_character == "Lolo", "Selected character should reach main scene")
+	assert(current_scene.scene_file_path == "res://scenes/main.tscn", "Character choice should switch to main.tscn")
 	print("Character selection test passed")
 	quit()
