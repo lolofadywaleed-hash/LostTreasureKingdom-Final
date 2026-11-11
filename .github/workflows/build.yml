@@ -38,6 +38,8 @@ jobs:
           rm -f debug.keystore
           keytool -keyalg RSA -genkeypair -alias androiddebugkey -keypass androiduser -keystore debug.keystore -storepass androiduser -dname "CN=Android Debug,O=Android,C=US" -validity 9999
           printf 'export/android/android_sdk_path = "%s"\nexport/android/java_sdk_path = "%s"\n' "$ANDROID_HOME" "$JAVA_HOME" > "$HOME/.config/godot/editor_settings-4.tres"
+      - name: Import Godot resources
+        run: godot --headless --import --path .
       - name: Import, validate, and run tests
         run: |
           godot --headless --editor --path . --quit

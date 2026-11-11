@@ -1,9 +1,10 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/mobile_hud.tscn" id="2_hud"]
 [ext_resource type="Script" path="res://scripts/coin.gd" id="3_coin"]
 [ext_resource type="Script" path="res://scripts/chest.gd" id="4_chest"]
+[ext_resource type="PackedScene" path="res://assets/models/Chest_Wood.gltf" id="5_chest_model"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial"]
 sky_top_color = Color(0.11, 0.34, 0.68, 1)
@@ -62,6 +63,12 @@ size = Vector3(2, 20, 100)
 
 [sub_resource type="BoxShape3D" id="CastleShape"]
 size = Vector3(15, 12, 5.6)
+
+[sub_resource type="BoxShape3D" id="TreasureChestSolidShape"]
+size = Vector3(1.3, 0.72, 0.8)
+
+[sub_resource type="BoxShape3D" id="TreasureChestReachShape"]
+size = Vector3(3.2, 2.0, 3.2)
 
 [node name="Main" type="Node3D"]
 
@@ -259,8 +266,27 @@ script = ExtResource("3_coin")
 position = Vector3(-3.5, 1, -5)
 script = ExtResource("3_coin")
 
-[node name="TreasureChest" type="CSGBox3D" parent="Collectibles"]
+[node name="TreasureChest" type="Node3D" parent="Collectibles"]
 position = Vector3(0, 0.35, -10)
 script = ExtResource("4_chest")
+
+[node name="ChestModel" parent="Collectibles/TreasureChest" instance=ExtResource("5_chest_model")]
+position = Vector3(0, -0.33, 0)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Collectibles/TreasureChest"]
+collision_layer = 1
+collision_mask = 1
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Collectibles/TreasureChest/StaticBody3D"]
+shape = SubResource("TreasureChestSolidShape")
+
+[node name="InteractArea" type="Area3D" parent="Collectibles/TreasureChest"]
+collision_layer = 0
+collision_mask = 1
+monitorable = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Collectibles/TreasureChest/InteractArea"]
+position = Vector3(0, 0.4, 0.4)
+shape = SubResource("TreasureChestReachShape")
 
 [connection signal="coins_changed" from="Player" to="MobileHUD" method="update_coins"]

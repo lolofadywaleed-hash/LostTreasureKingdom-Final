@@ -1,4 +1,4 @@
-extends CSGBox3D
+extends Node3D
 
 signal opened(reward: int)
 
@@ -8,38 +8,24 @@ signal opened(reward: int)
 
 var _is_open := false
 var _player: Node3D = null
-var _lid_pivot: Node3D
+var _lid_animation: AnimationPlayer
+var _lid_fallback: Node3D
 var _area: Area3D
 var _hint: Label3D
 
 func _ready() -> void:
-	size = Vector3(1.2, 0.7, 0.8)
-	use_collision = true
-	material = _make_wood(Color(0.45, 0.26, 0.1, 1.0))
-	_build_lid()
-	_build_area()
+	_area = find_child("InteractArea", true, false) as Area3D
+	if _area == null:
+		_build_area()
+	else:
+		_area.collision_layer = 0
+		_area.collision_mask = 1
+		_area.monitorable = false
+		_connect_area_signals()
+
+	_lid_animation = find_child("AnimationPlayer", true, false) as AnimationPlayer
+	_lid_fallback = find_child("Chest_Wood_Lid", true, false) as Node3D
 	_build_hint()
-
-func _make_wood(color: Color) -> StandardMaterial3D:
-	var wood := StandardMaterial3D.new()
-	wood.albedo_color = color
-	wood.roughness = 0.85
-	return wood
-
-func _build_lid() -> void:
-	_lid_pivot = Node3D.new()
-	_lid_pivot.name = "LidPivot"
-	_lid_pivot.position = Vector3(0, 0.35, -0.4)
-	add_child(_lid_pivot)
-
-	var lid := MeshInstance3D.new()
-	lid.name = "Lid"
-	var box := BoxMesh.new()
-	box.size = Vector3(1.24, 0.2, 0.84)
-	lid.mesh = box
-	lid.position = Vector3(0, 0.1, 0.4)
-	lid.material_override = _make_wood(Color(0.55, 0.33, 0.12, 1.0))
-	_lid_pivot.add_child(lid)
 
 func _build_area() -> void:
 	_area = Area3D.new()
@@ -54,8 +40,13 @@ func _build_area() -> void:
 	shape.position = Vector3(0, 0.4, 0.4)
 	_area.add_child(shape)
 	add_child(_area)
-	_area.body_entered.connect(_on_body_entered)
-	_area.body_exited.connect(_on_body_exited)
+	_connect_area_signals()
+
+func _connect_area_signals() -> void:
+	if not _area.body_entered.is_connected(_on_body_entered):
+		_area.body_entered.connect(_on_body_entered)
+	if not _area.body_exited.is_connected(_on_body_exited):
+		_area.body_exited.connect(_on_body_exited)
 
 func _build_hint() -> void:
 	_hint = Label3D.new()
@@ -97,12 +88,17 @@ func _open() -> void:
 		return
 	_is_open = true
 	_hint.visible = false
-	_area.set_deferred("monitoring", false)
+	if is_instance_valid(_area):
+		_area.set_deferred("monitoring", false)
 	if _player != null:
 		if _player.is_connected("attacked", _on_player_attacked):
 			_player.disconnect("attacked", _on_player_attacked)
 		_player.call("add_coins", reward_coins)
-	var tween := create_tween()
-	tween.tween_property(_lid_pivot, "rotation:x", -deg_to_rad(lid_open_angle_deg), 0.5) \
-		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+	if _lid_animation != null and _lid_animation.has_animation("Chest_Open"):
+		_lid_animation.play("Chest_Open")
+	elif is_instance_valid(_lid_fallback):
+		var tween := create_tween()
+		tween.tween_property(_lid_fallback, "rotation:x", -deg_to_rad(lid_open_angle_deg), 0.5) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	opened.emit(reward_coins)
