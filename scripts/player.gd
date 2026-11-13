@@ -22,8 +22,8 @@ signal coins_changed(total: int)
 
 @export_group("Touch Camera")
 @export var camera_sensitivity: float = 0.005
-@export var min_camera_pitch: float = -45.0
-@export var max_camera_pitch: float = 60.0
+@export var min_camera_pitch: float = -60.0
+@export var max_camera_pitch: float = -10.0
 
 @export_group("Scene References")
 @export var camera_pivot_path: NodePath = ^"CameraPivot"
@@ -54,7 +54,8 @@ func _ready() -> void:
 	if visual_driver != null:
 		visual_driver.set_physics_process(false)
 	if camera_pivot:
-		camera_pitch = camera_pivot.rotation.x
+		camera_pitch = clampf(camera_pivot.rotation.x, deg_to_rad(min_camera_pitch), deg_to_rad(max_camera_pitch))
+		camera_pivot.rotation = Vector3(camera_pitch, camera_pivot.rotation.y, 0.0)
 	else:
 		push_warning("CameraPivot was not found!")
 	if animation_player:
@@ -164,7 +165,7 @@ func _input(event: InputEvent) -> void:
 func _rotate_camera(delta_position: Vector2) -> void:
 	if camera_pivot == null:
 		return
-	rotate_y(-delta_position.x * camera_sensitivity)
+	camera_pivot.rotation.y -= delta_position.x * camera_sensitivity
 	camera_pitch -= delta_position.y * camera_sensitivity
 	camera_pitch = clampf(camera_pitch, deg_to_rad(min_camera_pitch), deg_to_rad(max_camera_pitch))
-	camera_pivot.rotation.x = camera_pitch
+	camera_pivot.rotation = Vector3(camera_pitch, camera_pivot.rotation.y, 0.0)
