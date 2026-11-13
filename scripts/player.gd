@@ -35,6 +35,7 @@ signal coins_changed(total: int)
 @onready var camera_pivot: Node3D = get_node_or_null(camera_pivot_path) as Node3D
 @onready var animation_player: AnimationPlayer = _find_animation_player()
 
+var selected_hero: String = "Lolo"
 var coins_collected: int = 0
 var jump_requested: bool = false
 var camera_touch_index: int = -1
@@ -44,8 +45,11 @@ var _spawn_position := Vector3.ZERO
 
 
 func _ready() -> void:
+	add_to_group("player")
 	floor_snap_length = 0.25
 	_spawn_position = global_position
+	selected_hero = str(get_tree().root.get_meta("selected_hero", "Lolo"))
+	print("Selected hero: ", selected_hero)
 	var visual_driver := get_node_or_null("KnightVisual")
 	if visual_driver != null:
 		visual_driver.set_physics_process(false)
