@@ -24,10 +24,12 @@ func _run() -> void:
 	hero_row.get_node("Btn_Lolo").pressed.emit()
 	await process_frame
 	assert(current_scene != null)
+	assert(root.get_meta("selected_hero", "") == "Lolo", "Selected hero should persist when changing scenes")
 	assert(current_scene.scene_file_path == "res://scenes/main.tscn", "Hero choice should open the 3D scene")
 
 	var player := current_scene.get_node("Player") as CharacterBody3D
 	assert(player != null, "Main scene needs a CharacterBody3D player")
+	assert(player.selected_hero == "Lolo", "Player should receive the selected hero")
 	assert(player.get_node("CollisionShape3D").shape is CapsuleShape3D, "Player must use a capsule collision shape")
 	assert(player.get_node_or_null("Visual") == null, "Old cylinder visual should be removed")
 	var knight := player.get_node("KnightVisual")
