@@ -33,9 +33,16 @@ func _ready() -> void:
 		gold.roughness = 0.3
 		gold.emission_enabled = true
 		gold.emission = Color(0.6, 0.4, 0.0, 1.0)
-		gold.emission_energy_multiplier = 0.4
+		gold.emission_energy_multiplier = 1.1
 		coin_mesh.material_override = gold
 		add_child(coin_mesh)
+		var coin_light := OmniLight3D.new()
+		coin_light.name = "CoinGlow"
+		coin_light.light_color = Color(1.0, 0.68, 0.12, 1.0)
+		coin_light.light_energy = 0.45
+		coin_light.omni_range = 2.2
+		coin_light.shadow_enabled = false
+		add_child(coin_light)
 
 	if get_node_or_null("CollisionShape3D") == null:
 		var collision := CollisionShape3D.new()
