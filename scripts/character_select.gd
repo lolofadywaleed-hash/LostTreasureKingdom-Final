@@ -25,7 +25,11 @@ func _ready() -> void:
 		button.pressed.connect(_on_character_pressed.bind(char_data["name"]))
 		container.add_child(button)
 
-func _on_character_pressed(_char_name: String) -> void:
+func _on_character_pressed(char_name: String) -> void:
+	if char_name not in ["Lolo", "AlSayed", "Fady"]:
+		push_error("Unknown hero selected: " + char_name)
+		return
+	get_tree().root.set_meta("selected_hero", char_name)
 	var err := get_tree().change_scene_to_file("res://scenes/main.tscn")
 	if err != OK:
 		push_error("Could not open res://scenes/main.tscn (error %s)." % err)
