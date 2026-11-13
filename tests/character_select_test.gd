@@ -24,20 +24,35 @@ func _run() -> void:
 	hero_row.get_node("Btn_Lolo").pressed.emit()
 	await process_frame
 	assert(current_scene != null)
+	assert(root.get_meta("selected_hero", "") == "Lolo", "Selected hero should persist when changing scenes")
 	assert(current_scene.scene_file_path == "res://scenes/main.tscn", "Hero choice should open the 3D scene")
 
 	var player := current_scene.get_node("Player") as CharacterBody3D
 	assert(player != null, "Main scene needs a CharacterBody3D player")
+	assert(player.selected_hero == "Lolo", "Player should receive the selected hero")
 	assert(player.get_node("CollisionShape3D").shape is CapsuleShape3D, "Player must use a capsule collision shape")
-	assert(player.get_node("Visual") is CSGCylinder3D, "Player should have a visible cylinder mesh")
-	assert(player.get_node("SpringArm3D/Camera3D").current, "Third-person camera should be active")
+	assert(player.get_node_or_null("Visual") == null, "Old cylinder visual should be removed")
+	var knight := player.get_node("KnightVisual")
+	assert(knight.get_child_count() > 0, "Knight model should be instanced under KnightVisual")
+	var knight_model := knight.get_child(0)
+	assert(not knight_model.find_children("*", "Skeleton3D", true, false).is_empty(), "Knight model needs a skeleton")
+	var knight_players := knight_model.find_children("*", "AnimationPlayer", true, false)
+	assert(not knight_players.is_empty(), "Knight model needs an AnimationPlayer")
+	assert(knight_players[0].has_animation("Idle") and knight_players[0].has_animation("Walk"), "Knight model should provide Idle and Walk")
+	assert(player.get_node("CameraPivot") is Node3D, "Player should expose a CameraPivot")
+	assert(player.get_node("CameraPivot/SpringArm3D/Camera3D").current, "Third-person camera should be active")
 	assert(current_scene.get_node("WorldEnvironment").environment.sky.sky_material is ProceduralSkyMaterial)
 	assert(current_scene.get_node("Path") is CSGBox3D)
 	assert(current_scene.get_node("Castle/CastleKeep") is CSGBox3D)
 	var hud := current_scene.get_node("MobileHUD")
 	assert(hud != null, "Main scene should instantiate the mobile HUD")
-	for action_name in ["attack", "jump", "skill"]:
+	for action_name in ["move_left", "move_right", "move_up", "move_down", "jump", "attack", "skill"]:
 		assert(InputMap.has_action(action_name), "HUD action should be registered: " + action_name)
+	assert(hud.jump_button is BaseButton, "Jump HUD control should be a real button")
+	assert(hud.jump_button.is_connected("pressed", Callable(hud, "_on_jump_button_pressed")), "Jump button pressed signal should be connected to HUD")
+	hud.jump_button.pressed.emit()
+	assert(player.jump_requested, "HUD pressed signal should request a player jump")
+	player.jump_requested = false
 
 	var attack_center: Vector2 = hud.attack_button.get_global_rect().get_center()
 	hud._on_touch_pressed(20, attack_center)
@@ -64,12 +79,29 @@ func _run() -> void:
 	for _frame in range(30):
 		await physics_frame
 	assert(player.is_on_floor(), "Player should stand on the floor collision")
+	var knight_animation_players := player.get_node("KnightVisual").get_child(0).find_children("*", "AnimationPlayer", true, false)
+	assert(not knight_animation_players.is_empty(), "Knight model should expose an AnimationPlayer")
+	var knight_anim := knight_animation_players[0] as AnimationPlayer
+	assert(knight_anim.current_animation == "Idle", "Knight should play Idle while standing")
 	var initial_z := player.global_position.z
-	Input.action_press("move_forward")
+	Input.action_press("move_up")
 	for _frame in range(20):
 		await physics_frame
-	Input.action_release("move_forward")
+	assert(knight_anim.current_animation == "Walk", "Knight should play Walk while moving")
+	Input.action_release("move_up")
 	assert(player.global_position.z < initial_z - 0.2, "Keyboard forward input should move the player down the path")
+	for _frame in range(4):
+		await physics_frame
+	assert(knight_anim.current_animation == "Idle", "Knight should return to Idle after movement")
+	var jump_start_y := player.global_position.y
+	Input.action_press("jump")
+	for _frame in range(4):
+		await physics_frame
+	Input.action_release("jump")
+	assert(player.global_position.y > jump_start_y + 0.05, "Player should jump with the existing physics")
+	for _frame in range(50):
+		await physics_frame
+	assert(player.is_on_floor(), "Player should land after jumping")
 
 	player.global_position = Vector3(0, -21, 12)
 	await physics_frame

@@ -1,10 +1,14 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/mobile_hud.tscn" id="2_hud"]
 [ext_resource type="Script" path="res://scripts/coin.gd" id="3_coin"]
 [ext_resource type="Script" path="res://scripts/chest.gd" id="4_chest"]
 [ext_resource type="PackedScene" path="res://assets/models/Chest_Wood.gltf" id="5_chest_model"]
+[ext_resource type="Script" path="res://knight_visual.gd" id="6_knight_visual"]
+[ext_resource type="Script" path="res://scripts/player_health.gd" id="7_health"]
+[ext_resource type="Script" path="res://scripts/attack.gd" id="8_attack"]
+[ext_resource type="Script" path="res://scripts/enemy.gd" id="9_enemy"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial"]
 sky_top_color = Color(0.11, 0.34, 0.68, 1)
@@ -20,8 +24,17 @@ sky_material = SubResource("ProceduralSkyMaterial")
 [sub_resource type="Environment" id="Environment"]
 background_mode = 2
 sky = SubResource("Sky")
-ambient_light_color = Color(0.76, 0.84, 0.92, 1)
-ambient_light_energy = 0.75
+ambient_light_source = 3
+ambient_light_color = Color(0.78, 0.84, 0.96, 1)
+ambient_light_energy = 0.85
+tonemap_mode = 3
+glow_enabled = true
+glow_intensity = 0.8
+glow_bloom = 0.2
+fog_enabled = true
+fog_light_color = Color(0.48, 0.62, 0.78, 1)
+fog_density = 0.01
+ssao_enabled = false
 
 [sub_resource type="StandardMaterial3D" id="GrassMaterial"]
 albedo_color = Color(0.18, 0.43, 0.16, 1)
@@ -46,10 +59,6 @@ roughness = 1.0
 [sub_resource type="StandardMaterial3D" id="LeafMaterial"]
 albedo_color = Color(0.1, 0.34, 0.12, 1)
 roughness = 1.0
-
-[sub_resource type="StandardMaterial3D" id="PlayerMaterial"]
-albedo_color = Color(0.92, 0.63, 0.16, 1)
-roughness = 0.72
 
 [sub_resource type="CapsuleShape3D" id="PlayerCapsule"]
 radius = 0.42
@@ -77,9 +86,13 @@ environment = SubResource("Environment")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 rotation = Vector3(-0.82, -0.48, 0)
-light_color = Color(1, 0.94, 0.78, 1)
-light_energy = 1.35
+light_color = Color(1.0, 0.78, 0.48, 1)
+light_energy = 1.45
 shadow_enabled = true
+directional_shadow_max_distance = 60.0
+directional_shadow_mode = 2
+light_angular_distance = 1.5
+shadow_blur = 1.2
 
 [node name="GrassFloor" type="CSGBox3D" parent="."]
 position = Vector3(0, -0.55, 0)
@@ -152,27 +165,37 @@ position = Vector3(-60.5, 10, 0)
 shape = SubResource("WallShapeZ")
 
 [node name="Player" type="CharacterBody3D" parent="."]
+
 position = Vector3(0, 0, 12)
 script = ExtResource("1_player")
 
-[node name="Visual" type="CSGCylinder3D" parent="Player"]
-position = Vector3(0, 0.9, 0)
-radius = 0.42
-height = 1.8
-sides = 16
-material = SubResource("PlayerMaterial")
+[node name="HealthSystem" type="Node" parent="Player"]
+script = ExtResource("7_health")
+
+[node name="AttackSystem" type="Node" parent="Player"]
+script = ExtResource("8_attack")
+
+[node name="KnightVisual" type="Node3D" parent="Player"]
+script = ExtResource("6_knight_visual")
+hide_old_visual = false
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
 position = Vector3(0, 0.9, 0)
 shape = SubResource("PlayerCapsule")
 
-[node name="SpringArm3D" type="SpringArm3D" parent="Player"]
+[node name="CameraPivot" type="Node3D" parent="Player"]
 position = Vector3(0, 2.5, 0)
 rotation = Vector3(-0.18, 0, 0)
+
+[node name="SpringArm3D" type="SpringArm3D" parent="Player/CameraPivot"]
 spring_length = 8.0
 
-[node name="Camera3D" type="Camera3D" parent="Player/SpringArm3D"]
+[node name="Camera3D" type="Camera3D" parent="Player/CameraPivot/SpringArm3D"]
 current = true
+
+[node name="Enemy" type="CharacterBody3D" parent="."]
+position = Vector3(0, 0, -2)
+script = ExtResource("9_enemy")
 
 [node name="MobileHUD" parent="." instance=ExtResource("2_hud")]
 
@@ -290,3 +313,4 @@ position = Vector3(0, 0.4, 0.4)
 shape = SubResource("TreasureChestReachShape")
 
 [connection signal="coins_changed" from="Player" to="MobileHUD" method="update_coins"]
+[connection signal="jump_pressed" from="MobileHUD" to="Player" method="_on_jump_button_pressed"]
