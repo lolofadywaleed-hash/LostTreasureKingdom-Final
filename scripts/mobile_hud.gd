@@ -1,6 +1,7 @@
 extends CanvasLayer
 
 signal move_vector_changed(vector: Vector2)
+signal jump_pressed
 
 const LEFT_HALF_RATIO := 0.5
 const DEADZONE := 0.12
@@ -10,7 +11,7 @@ const IDLE_ALPHA := 0.8
 @onready var joystick_base: Panel = $Root/JoystickBase
 @onready var joystick_knob: Panel = $Root/JoystickBase/Knob
 @onready var attack_button: Control = $Root/AttackButton
-@onready var jump_button: Control = $Root/JumpButton
+@onready var jump_button: BaseButton = $Root/JumpButton
 @onready var skill_button: Control = $Root/SkillButton
 @onready var coin_panel: Control = $Root/CoinPanel
 @onready var coins_label: Label = $Root/CoinPanel/CoinLabel
@@ -55,6 +56,9 @@ func update_coins(amount: int) -> void:
 	_coin_tween = create_tween()
 	_coin_tween.tween_property(coin_panel, "scale", Vector2(1.15, 1.15), 0.08)
 	_coin_tween.tween_property(coin_panel, "scale", Vector2.ONE, 0.12)
+
+func _on_jump_button_pressed() -> void:
+	jump_pressed.emit()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
@@ -113,8 +117,8 @@ func _set_move_vector(vector: Vector2) -> void:
 	_move_vector = vector
 	_apply_axis("move_left", maxf(-vector.x, 0.0))
 	_apply_axis("move_right", maxf(vector.x, 0.0))
-	_apply_axis("move_forward", maxf(-vector.y, 0.0))
-	_apply_axis("move_back", maxf(vector.y, 0.0))
+	_apply_axis("move_up", maxf(-vector.y, 0.0))
+	_apply_axis("move_down", maxf(vector.y, 0.0))
 	move_vector_changed.emit(vector)
 
 func _apply_axis(action_name: String, strength: float) -> void:
