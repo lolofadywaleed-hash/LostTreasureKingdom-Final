@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/mobile_hud.tscn" id="2_hud"]
@@ -6,6 +6,9 @@
 [ext_resource type="Script" path="res://scripts/chest.gd" id="4_chest"]
 [ext_resource type="PackedScene" path="res://assets/models/Chest_Wood.gltf" id="5_chest_model"]
 [ext_resource type="Script" path="res://knight_visual.gd" id="6_knight_visual"]
+[ext_resource type="Script" path="res://scripts/player_health.gd" id="7_health"]
+[ext_resource type="Script" path="res://scripts/attack.gd" id="8_attack"]
+[ext_resource type="Script" path="res://scripts/enemy.gd" id="9_enemy"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial"]
 sky_top_color = Color(0.11, 0.34, 0.68, 1)
@@ -149,8 +152,15 @@ position = Vector3(-60.5, 10, 0)
 shape = SubResource("WallShapeZ")
 
 [node name="Player" type="CharacterBody3D" parent="."]
+
 position = Vector3(0, 0, 12)
 script = ExtResource("1_player")
+
+[node name="HealthSystem" type="Node" parent="Player"]
+script = ExtResource("7_health")
+
+[node name="AttackSystem" type="Node" parent="Player"]
+script = ExtResource("8_attack")
 
 [node name="KnightVisual" type="Node3D" parent="Player"]
 script = ExtResource("6_knight_visual")
@@ -169,6 +179,10 @@ spring_length = 8.0
 
 [node name="Camera3D" type="Camera3D" parent="Player/CameraPivot/SpringArm3D"]
 current = true
+
+[node name="Enemy" type="CharacterBody3D" parent="."]
+position = Vector3(0, 0, -2)
+script = ExtResource("9_enemy")
 
 [node name="MobileHUD" parent="." instance=ExtResource("2_hud")]
 
