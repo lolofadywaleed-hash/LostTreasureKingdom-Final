@@ -48,7 +48,7 @@ func _build_health_display() -> void:
 	_hud_layer = CanvasLayer.new()
 	_hud_layer.name = "HealthDisplay"
 	_hud_layer.layer = 20
-	get_tree().root.add_child.call_deferred(_hud_layer)
+	get_tree().root.add_child(_hud_layer)
 	var panel := PanelContainer.new()
 	panel.position = Vector2(24, 24)
 	panel.custom_minimum_size = Vector2(170, 52)
