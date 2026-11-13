@@ -188,7 +188,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme_override_font_sizes/font_size = 24
-text = "Attack"
+text = "⚔"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -221,7 +221,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme_override_font_sizes/font_size = 20
-text = "Jump"
+text = "↑"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -250,7 +250,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme_override_font_sizes/font_size = 20
-text = "Skill"
+text = "⚡"
 horizontal_alignment = 1
 vertical_alignment = 1
 
