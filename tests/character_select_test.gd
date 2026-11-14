@@ -56,6 +56,10 @@ func _run() -> void:
 	assert(current_scene.get_node("WorldEnvironment").environment.sky.sky_material is ProceduralSkyMaterial)
 	assert(current_scene.get_node("Path") is CSGBox3D)
 	assert(current_scene.get_node("Castle/CastleKeep") is CSGBox3D)
+	assert(not current_scene.get_node("Castle/CastleKeep").visible, "Old placeholder castle keep should be hidden after visual replacement")
+	var castle_upgrade := current_scene.get_node_or_null("Castle/VisualUpgrade")
+	assert(castle_upgrade != null, "Castle should include the detailed visual upgrade")
+	assert(castle_upgrade.get_child_count() >= 35, "Detailed castle should contain towers, battlements, gate and facade details")
 	var floor_mesh := current_scene.get_node("GrassFloor") as CSGBox3D
 	assert(floor_mesh.size.x >= 200.0 and floor_mesh.size.z >= 160.0, "Starter region should provide a larger exploration area")
 	var visual_world := current_scene.get_node_or_null("VisualWorld")
