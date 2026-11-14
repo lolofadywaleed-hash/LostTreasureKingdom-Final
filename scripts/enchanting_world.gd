@@ -28,14 +28,14 @@ func _mat(color: Color, rough: float, emission: Color = Color.BLACK, energy: flo
 		m.emission_energy_multiplier = energy
 	return m
 
-func _mesh_node(node_name: String, mesh: Mesh, pos: Vector3, material: Material, scale_value: Vector3 = Vector3.ONE, parent: Node = self) -> MeshInstance3D:
+func _mesh_node(node_name: String, mesh: Mesh, pos: Vector3, material: Material, scale_value: Vector3 = Vector3.ONE) -> MeshInstance3D:
 	var instance := MeshInstance3D.new()
 	instance.name = node_name
 	instance.mesh = mesh
 	instance.position = pos
 	instance.scale = scale_value
 	instance.material_override = material
-	parent.add_child(instance)
+	add_child(instance)
 	return instance
 
 func _build_stoneway() -> void:
