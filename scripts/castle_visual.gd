@@ -64,7 +64,7 @@ func _build_keep() -> void:
 
 func _build_towers() -> void:
 	for side in [-1.0, 1.0]:
-		var x := side * 6.2
+		var x: float = float(side) * 6.2
 		_cylinder("RoundTower_%s" % str(side), 1.42, 1.72, 13.0, 16, Vector3(x, 6.5, 0), _light_stone)
 		_cylinder("TowerLowerBand_%s" % str(side), 1.82, 1.82, 0.48, 16, Vector3(x, 1.2, 0), _gold)
 		_cylinder("TowerCrownBand_%s" % str(side), 1.75, 1.75, 0.55, 16, Vector3(x, 12.65, 0), _gold)
