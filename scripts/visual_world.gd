@@ -38,7 +38,7 @@ func _build_forest() -> void:
 	trunk.bottom_radius = 0.38
 	trunk.height = 3.5
 	trunk.radial_segments = 7
-	trunk.material = _vertex_material(Color.WHITE, 0.96)
+	trunk.material = _vertex_material(Color(0.28, 0.16, 0.08), 0.96)
 
 	var canopy := SphereMesh.new()
 	canopy.radius = 1.25
