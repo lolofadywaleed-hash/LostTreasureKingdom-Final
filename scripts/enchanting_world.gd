@@ -3,15 +3,19 @@ extends Node3D
 ## Lightweight meshes and a small number of lights keep this suitable for Android.
 
 var _rng := RandomNumberGenerator.new()
-var _stone := _mat(Color(0.42, 0.48, 0.52), 0.92)
-var _gold := _mat(Color(0.92, 0.62, 0.19), 0.48, Color(1.0, 0.48, 0.08), 0.7)
-var _blue_glow := _mat(Color(0.28, 0.72, 0.98), 0.22, Color(0.12, 0.58, 1.0), 2.2)
-var _green_glow := _mat(Color(0.32, 0.92, 0.68), 0.28, Color(0.08, 0.9, 0.56), 1.6)
+var _stone: StandardMaterial3D
+var _gold: StandardMaterial3D
+var _blue_glow: StandardMaterial3D
+var _green_glow: StandardMaterial3D
 var _animated_gems: Array[MeshInstance3D] = []
 var _time := 0.0
 
 func _ready() -> void:
 	_rng.seed = 14112026
+	_stone = _mat(Color(0.42, 0.48, 0.52), 0.92)
+	_gold = _mat(Color(0.92, 0.62, 0.19), 0.48, Color(1.0, 0.48, 0.08), 0.7)
+	_blue_glow = _mat(Color(0.28, 0.72, 0.98), 0.22, Color(0.12, 0.58, 1.0), 2.2)
+	_green_glow = _mat(Color(0.32, 0.92, 0.68), 0.28, Color(0.08, 0.9, 0.56), 1.6)
 	_build_stoneway()
 	_build_ancient_gate()
 	_build_crystal_altars()
