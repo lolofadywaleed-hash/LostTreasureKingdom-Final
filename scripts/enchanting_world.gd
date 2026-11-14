@@ -139,7 +139,7 @@ func _build_lanterns() -> void:
 	for i in range(8):
 		var z := 8.0 - float(i) * 5.3
 		for side in [-1.0, 1.0]:
-			var x := side * 5.2
+			var x: float = float(side) * 5.2
 			_mesh_node("LanternPost_%02d_%s" % [i, str(side)], post, Vector3(x, 1.35, z), _stone)
 			_mesh_node("LanternFlame_%02d_%s" % [i, str(side)], orb, Vector3(x, 2.9, z), _gold)
 			if i % 2 == 0:
