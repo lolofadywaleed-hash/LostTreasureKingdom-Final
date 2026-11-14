@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://scripts/attack.gd" id="8_attack"]
 [ext_resource type="Script" path="res://scripts/enemy.gd" id="9_enemy"]
 [ext_resource type="Script" path="res://scripts/visual_world.gd" id="10_visual_world"]
+[ext_resource type="Script" path="res://scripts/enchanting_world.gd" id="11_enchanting_world"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial"]
 sky_top_color = Color(0.11, 0.34, 0.68, 1)
@@ -42,7 +43,7 @@ albedo_color = Color(0.18, 0.43, 0.16, 1)
 roughness = 1.0
 
 [sub_resource type="StandardMaterial3D" id="PathMaterial"]
-albedo_color = Color(0.48, 0.34, 0.2, 1)
+albedo_color = Color(0.48, 0.48, 0.43, 1)
 roughness = 1.0
 
 [sub_resource type="StandardMaterial3D" id="CastleMaterial"]
@@ -88,6 +89,9 @@ environment = SubResource("Environment")
 [node name="VisualWorld" type="Node3D" parent="."]
 script = ExtResource("10_visual_world")
 
+[node name="EnchantingWorld" type="Node3D" parent="."]
+script = ExtResource("11_enchanting_world")
+
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 rotation = Vector3(-0.82, -0.48, 0)
 light_color = Color(1.0, 0.78, 0.48, 1)
@@ -106,7 +110,7 @@ material = SubResource("GrassMaterial")
 
 [node name="Path" type="CSGBox3D" parent="."]
 position = Vector3(0, 0.035, -35)
-size = Vector3(14, 0.12, 100)
+size = Vector3(8, 0.12, 100)
 material = SubResource("PathMaterial")
 
 [node name="Castle" type="Node3D" parent="."]
