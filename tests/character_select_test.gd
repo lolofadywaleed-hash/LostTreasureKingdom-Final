@@ -56,6 +56,17 @@ func _run() -> void:
 	assert(current_scene.get_node("WorldEnvironment").environment.sky.sky_material is ProceduralSkyMaterial)
 	assert(current_scene.get_node("Path") is CSGBox3D)
 	assert(current_scene.get_node("Castle/CastleKeep") is CSGBox3D)
+	var floor_mesh := current_scene.get_node("GrassFloor") as CSGBox3D
+	assert(floor_mesh.size.x >= 200.0 and floor_mesh.size.z >= 160.0, "Starter region should provide a larger exploration area")
+	var visual_world := current_scene.get_node_or_null("VisualWorld")
+	assert(visual_world != null, "Main scene should include the procedural visual world")
+	var forest := visual_world.get_node_or_null("ForestCanopies") as MultiMeshInstance3D
+	var rocks := visual_world.get_node_or_null("NaturalRockClusters") as MultiMeshInstance3D
+	var crystals := visual_world.get_node_or_null("AncientCrystalGrove") as MultiMeshInstance3D
+	assert(forest != null and forest.multimesh.instance_count >= 100, "Procedural forest should contain at least 100 tree crowns")
+	assert(rocks != null and rocks.multimesh.instance_count >= 30, "Procedural scenery should contain natural rock clusters")
+	assert(crystals != null and crystals.multimesh.instance_count >= 15, "Procedural scenery should contain glowing crystal landmarks")
+	assert(visual_world.find_children("HorizonHill_*", "MeshInstance3D", true, false).size() >= 12, "The world should include distant landscape silhouettes")
 	var hud := current_scene.get_node("MobileHUD")
 	assert(hud != null, "Main scene should instantiate the mobile HUD")
 	for action_name in ["move_left", "move_right", "move_up", "move_down", "jump", "attack", "skill"]:
