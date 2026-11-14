@@ -27,6 +27,18 @@ func _run() -> void:
 	assert(root.get_meta("selected_hero", "") == "Lolo", "Selected hero should persist when changing scenes")
 	assert(current_scene.scene_file_path == "res://scenes/main.tscn", "Hero choice should open the 3D scene")
 
+	var enemy := current_scene.get_node_or_null("Enemy") as CharacterBody3D
+	assert(enemy != null, "Main scene needs an enemy CharacterBody3D")
+	assert(enemy.is_in_group("enemies"), "Enemy should register in the enemies group")
+	var left_horn := enemy.get_node_or_null("Visual/LeftHorn") as MeshInstance3D
+	var right_horn := enemy.get_node_or_null("Visual/RightHorn") as MeshInstance3D
+	assert(left_horn != null and left_horn.mesh is CylinderMesh, "Left enemy horn must use CylinderMesh")
+	assert(right_horn != null and right_horn.mesh is CylinderMesh, "Right enemy horn must use CylinderMesh")
+	assert(is_zero_approx((left_horn.mesh as CylinderMesh).top_radius), "Enemy horn tip radius must be zero")
+	var enemy_health_before := int(enemy.get("_health"))
+	enemy.call("take_damage", 1)
+	assert(int(enemy.get("_health")) == enemy_health_before - 1, "Enemy should lose health when damaged")
+
 	var player := current_scene.get_node("Player") as CharacterBody3D
 	assert(player != null, "Main scene needs a CharacterBody3D player")
 	assert(player.selected_hero == "Lolo", "Player should receive the selected hero")

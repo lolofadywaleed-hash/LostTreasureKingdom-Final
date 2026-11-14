@@ -62,6 +62,12 @@ jobs:
       - name: Import project resources
         run: godot --headless --editor --path . --import --quit
 
+      - name: Validate every GDScript file
+        shell: bash
+        run: |
+          set -euo pipefail
+          godot --headless --path . --script res://tests/script_parse_test.gd
+
       - name: Run project smoke tests
         shell: bash
         run: |
