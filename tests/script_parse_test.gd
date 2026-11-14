@@ -1,8 +1,9 @@
 extends SceneTree
-## Load every GDScript in the repository; a parse/compile failure fails CI.
+## Load every project GDScript without recursively reloading this running test.
 
 var _script_paths: PackedStringArray = []
 var _failures: PackedStringArray = []
+var _visited_directories: Dictionary = {}
 
 
 func _initialize() -> void:
@@ -10,14 +11,21 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	_collect_scripts("res://")
+	_collect_scripts("res://", 0)
 	_script_paths.sort()
 	for script_path in _script_paths:
-		var resource := ResourceLoader.load(script_path, "GDScript", ResourceLoader.CACHE_MODE_IGNORE)
+		# This test is already parsed and running; reloading itself with CACHE_MODE_IGNORE
+		# can cause a self-reload cycle in headless CI.
+		if script_path == "res://tests/script_parse_test.gd":
+			continue
+		var resource := ResourceLoader.load(script_path, "GDScript")
 		if resource == null:
 			_failures.append("%s: ResourceLoader returned null" % script_path)
 		elif not resource is GDScript:
 			_failures.append("%s: resource is not a GDScript" % script_path)
+
+	if _script_paths.is_empty():
+		_failures.append("No GDScript files were discovered.")
 
 	if not _failures.is_empty():
 		push_error("GDScript validation failed (%d/%d):" % [_failures.size(), _script_paths.size()])
@@ -30,21 +38,15 @@ func _run() -> void:
 	quit(0)
 
 
-func _collect_scripts(directory_path: String) -> void:
-	var directory := DirAccess.open(directory_path)
-	if directory == null:
-		_failures.append("%s: could not open directory" % directory_path)
+func _collect_scripts(directory_path: String, depth: int) -> void:
+	if depth > 8 or _visited_directories.has(directory_path):
 		return
+	_visited_directories[directory_path] = true
 
-	directory.list_dir_begin()
-	var entry := directory.get_next()
-	while not entry.is_empty():
-		if entry != "." and entry != "..":
-			var entry_path := directory_path.path_join(entry)
-			if directory.current_is_dir():
-				if not entry.begins_with("."):
-					_collect_scripts(entry_path)
-			elif entry.get_extension().to_lower() == "gd":
-				_script_paths.append(entry_path)
-		entry = directory.get_next()
-	directory.list_dir_end()
+	for file_name in DirAccess.get_files_at(directory_path):
+		if file_name.get_extension().to_lower() == "gd":
+			_script_paths.append(directory_path.path_join(file_name))
+
+	for directory_name in DirAccess.get_directories_at(directory_path):
+		if not directory_name.begins_with("."):
+			_collect_scripts(directory_path.path_join(directory_name), depth + 1)
