@@ -46,9 +46,29 @@ func _ready() -> void:
 	add_child(_model)
 	_model.rotation_degrees.y = face_rotation_deg
 
+	_apply_selected_hero_material()
 	_hide_old_visual()
 	_fit_to_collision()
 	_setup_animations()
+
+
+func _apply_selected_hero_material() -> void:
+	var hero_id := str(get_tree().root.get_meta("selected_hero", "Lolo"))
+	var hero_colors := {
+		"Lolo": Color(0.12, 0.82, 0.38),
+		"Fady": Color(0.92, 0.16, 0.18),
+		"AlSayed": Color(0.12, 0.42, 0.96)
+	}
+	var hero_color: Color = hero_colors.get(hero_id, hero_colors["Lolo"])
+	var material := StandardMaterial3D.new()
+	material.albedo_color = hero_color
+	material.roughness = 0.68
+	material.metallic = 0.08
+	var count := 0
+	for item in _model.find_children("*", "MeshInstance3D", true, false):
+		(item as MeshInstance3D).material_override = material
+		count += 1
+	_log("hero material applied: %s (%d mesh instances)" % [hero_id, count])
 
 
 func _log(msg: String) -> void:
