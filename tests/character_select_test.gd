@@ -9,7 +9,8 @@ func _run() -> void:
 	var select := select_scene.instantiate() as Control
 	root.add_child(select)
 	current_scene = select
-	await process_frame
+	for _frame in range(5):
+		await process_frame
 
 	var hero_row := select.get_node_or_null("MarginContainer/VBoxContainer/HBoxContainer") as HBoxContainer
 	assert(hero_row != null, "Hero row should exist inside the responsive containers")
@@ -42,6 +43,10 @@ func _run() -> void:
 	var player := current_scene.get_node("Player") as CharacterBody3D
 	assert(player != null, "Main scene needs a CharacterBody3D player")
 	assert(player.selected_hero == "Lolo", "Player should receive the selected hero")
+	var hero_meshes := player.get_node("KnightVisual").get_child(0).find_children("*", "MeshInstance3D", true, false)
+	assert(not hero_meshes.is_empty(), "Selected hero model should contain visible meshes")
+	var hero_material := (hero_meshes[0] as MeshInstance3D).material_override as StandardMaterial3D
+	assert(hero_material != null and hero_material.albedo_color.is_equal_approx(Color(0.12, 0.82, 0.38)), "Lolo must use the green material override")
 	assert(player.get_node("CollisionShape3D").shape is CapsuleShape3D, "Player must use a capsule collision shape")
 	assert(player.get_node_or_null("Visual") == null, "Old cylinder visual should be removed")
 	var knight := player.get_node("KnightVisual")
@@ -54,14 +59,15 @@ func _run() -> void:
 	assert(player.get_node("CameraPivot") is Node3D, "Player should expose a CameraPivot")
 	assert(player.get_node("CameraPivot/SpringArm3D/Camera3D").current, "Third-person camera should be active")
 	assert(current_scene.get_node("WorldEnvironment").environment.sky.sky_material is ProceduralSkyMaterial)
-	assert(current_scene.get_node("Path") is CSGBox3D)
+	assert(current_scene.get_node("Path") is MeshInstance3D and current_scene.get_node("Path").mesh is BoxMesh, "Road should use a regular mesh, not CSG")
 	assert(current_scene.get_node("Castle/CastleKeep") is CSGBox3D)
 	assert(not current_scene.get_node("Castle/CastleKeep").visible, "Old placeholder castle keep should be hidden after visual replacement")
 	var castle_upgrade := current_scene.get_node_or_null("Castle/VisualUpgrade")
 	assert(castle_upgrade != null, "Castle should include the detailed visual upgrade")
 	assert(castle_upgrade.get_child_count() >= 35, "Detailed castle should contain towers, battlements, gate and facade details")
-	var floor_mesh := current_scene.get_node("GrassFloor") as CSGBox3D
-	assert(floor_mesh.size.x >= 200.0 and floor_mesh.size.z >= 160.0, "Starter region should provide a larger exploration area")
+	var floor_mesh := current_scene.get_node("GrassFloor") as MeshInstance3D
+	assert(floor_mesh.mesh is PlaneMesh and (floor_mesh.mesh as PlaneMesh).size.x >= 200.0 and (floor_mesh.mesh as PlaneMesh).size.y >= 160.0, "Starter region should use a large mesh floor")
+	assert(current_scene.get_node_or_null("FloorCollision/CollisionShape3D") != null, "Mesh floor must retain a separate collision body")
 	var visual_world := current_scene.get_node_or_null("VisualWorld")
 	assert(visual_world != null, "Main scene should include the procedural visual world")
 	var forest := visual_world.get_node_or_null("ForestCanopies") as MultiMeshInstance3D
