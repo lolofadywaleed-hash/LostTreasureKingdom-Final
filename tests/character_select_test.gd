@@ -56,7 +56,8 @@ func _run() -> void:
 	var player := current_scene.get_node("Player") as CharacterBody3D
 	assert(player != null, "Main scene needs a CharacterBody3D player")
 	assert(player.selected_hero == "Lolo", "Player should receive the selected hero")
-	var hero_meshes := player.get_node("KnightVisual").get_child(0).find_children("*", "MeshInstance3D", true, false)
+	var knight := player.get_node("KnightVisual")
+	var hero_meshes := knight.get_child(0).find_children("*", "MeshInstance3D", true, false)
 	assert(not hero_meshes.is_empty(), "Selected hero model should contain visible meshes")
 	var hero_material := (hero_meshes[0] as MeshInstance3D).material_override as StandardMaterial3D
 	assert(hero_material != null and hero_material.albedo_color.is_equal_approx(Color(0.12, 0.82, 0.38)), "Lolo must use the green material override")
@@ -74,7 +75,6 @@ func _run() -> void:
 	assert(hero_material.albedo_color.is_equal_approx(Color(0.12, 0.82, 0.38)), "Lolo must remain green after switching back")
 	assert(player.get_node("CollisionShape3D").shape is CapsuleShape3D, "Player must use a capsule collision shape")
 	assert(player.get_node_or_null("Visual") == null, "Old cylinder visual should be removed")
-	var knight := player.get_node("KnightVisual")
 	assert(knight.get_child_count() > 0, "Knight model should be instanced under KnightVisual")
 	var knight_model := knight.get_child(0)
 	assert(not knight_model.find_children("*", "Skeleton3D", true, false).is_empty(), "Knight model needs a skeleton")
