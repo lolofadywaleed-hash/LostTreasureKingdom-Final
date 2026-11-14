@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3]
+[gd_scene load_steps=27 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/mobile_hud.tscn" id="2_hud"]
@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://scripts/enemy.gd" id="9_enemy"]
 [ext_resource type="Script" path="res://scripts/visual_world.gd" id="10_visual_world"]
 [ext_resource type="Script" path="res://scripts/enchanting_world.gd" id="11_enchanting_world"]
+[ext_resource type="Script" path="res://scripts/castle_visual.gd" id="12_castle_visual"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial"]
 sky_top_color = Color(0.055, 0.16, 0.38, 1)
@@ -116,12 +117,17 @@ material = SubResource("PathMaterial")
 [node name="Castle" type="Node3D" parent="."]
 position = Vector3(0, 0, -39)
 
+[node name="VisualUpgrade" type="Node3D" parent="Castle"]
+script = ExtResource("12_castle_visual")
+
 [node name="CastleKeep" type="CSGBox3D" parent="Castle"]
+visible = false
 position = Vector3(0, 4, 0)
 size = Vector3(14, 8, 5)
 material = SubResource("CastleMaterial")
 
 [node name="WestTower" type="CSGCylinder3D" parent="Castle"]
+visible = false
 position = Vector3(-5.7, 6, 0)
 radius = 1.45
 height = 12
@@ -129,6 +135,7 @@ sides = 12
 material = SubResource("CastleMaterial")
 
 [node name="EastTower" type="CSGCylinder3D" parent="Castle"]
+visible = false
 position = Vector3(5.7, 6, 0)
 radius = 1.45
 height = 12
@@ -136,6 +143,7 @@ sides = 12
 material = SubResource("CastleMaterial")
 
 [node name="Gate" type="CSGBox3D" parent="Castle"]
+visible = false
 position = Vector3(0, 2, 2.58)
 size = Vector3(3.2, 4, 0.22)
 material = SubResource("PathMaterial")
