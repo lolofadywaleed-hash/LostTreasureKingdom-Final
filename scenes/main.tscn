@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=26 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/mobile_hud.tscn" id="2_hud"]
@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://scripts/player_health.gd" id="7_health"]
 [ext_resource type="Script" path="res://scripts/attack.gd" id="8_attack"]
 [ext_resource type="Script" path="res://scripts/enemy.gd" id="9_enemy"]
+[ext_resource type="Script" path="res://scripts/visual_world.gd" id="10_visual_world"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial"]
 sky_top_color = Color(0.11, 0.34, 0.68, 1)
@@ -32,8 +33,8 @@ glow_enabled = true
 glow_intensity = 0.8
 glow_bloom = 0.2
 fog_enabled = true
-fog_light_color = Color(0.48, 0.62, 0.78, 1)
-fog_density = 0.01
+fog_light_color = Color(0.55, 0.72, 0.79, 1)
+fog_density = 0.006
 ssao_enabled = false
 
 [sub_resource type="StandardMaterial3D" id="GrassMaterial"]
@@ -65,10 +66,10 @@ radius = 0.42
 height = 1.8
 
 [sub_resource type="BoxShape3D" id="WallShapeX"]
-size = Vector3(122, 20, 2)
+size = Vector3(222, 20, 2)
 
 [sub_resource type="BoxShape3D" id="WallShapeZ"]
-size = Vector3(2, 20, 100)
+size = Vector3(2, 20, 182)
 
 [sub_resource type="BoxShape3D" id="CastleShape"]
 size = Vector3(15, 12, 5.6)
@@ -84,6 +85,9 @@ size = Vector3(3.2, 2.0, 3.2)
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment")
 
+[node name="VisualWorld" type="Node3D" parent="."]
+script = ExtResource("10_visual_world")
+
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 rotation = Vector3(-0.82, -0.48, 0)
 light_color = Color(1.0, 0.78, 0.48, 1)
@@ -97,12 +101,12 @@ shadow_blur = 1.2
 [node name="GrassFloor" type="CSGBox3D" parent="."]
 position = Vector3(0, -0.55, 0)
 use_collision = true
-size = Vector3(120, 1, 100)
+size = Vector3(220, 1, 180)
 material = SubResource("GrassMaterial")
 
 [node name="Path" type="CSGBox3D" parent="."]
-position = Vector3(0, 0.035, -17)
-size = Vector3(9, 0.12, 60)
+position = Vector3(0, 0.035, -35)
+size = Vector3(14, 0.12, 100)
 material = SubResource("PathMaterial")
 
 [node name="Castle" type="Node3D" parent="."]
@@ -141,25 +145,25 @@ shape = SubResource("CastleShape")
 [node name="Boundary" type="Node3D" parent="."]
 
 [node name="WallNorth" type="StaticBody3D" parent="Boundary"]
-position = Vector3(0, 10, -50.5)
+position = Vector3(0, 10, -90.5)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Boundary/WallNorth"]
 shape = SubResource("WallShapeX")
 
 [node name="WallSouth" type="StaticBody3D" parent="Boundary"]
-position = Vector3(0, 10, 50.5)
+position = Vector3(0, 10, 90.5)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Boundary/WallSouth"]
 shape = SubResource("WallShapeX")
 
 [node name="WallEast" type="StaticBody3D" parent="Boundary"]
-position = Vector3(60.5, 10, 0)
+position = Vector3(110.5, 10, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Boundary/WallEast"]
 shape = SubResource("WallShapeZ")
 
 [node name="WallWest" type="StaticBody3D" parent="Boundary"]
-position = Vector3(-60.5, 10, 0)
+position = Vector3(-110.5, 10, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Boundary/WallWest"]
 shape = SubResource("WallShapeZ")
