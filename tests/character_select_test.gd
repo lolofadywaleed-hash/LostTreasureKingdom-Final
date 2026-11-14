@@ -62,12 +62,15 @@ func _run() -> void:
 	assert(hero_material != null and hero_material.albedo_color.is_equal_approx(Color(0.12, 0.82, 0.38)), "Lolo must use the green material override")
 	root.set_meta("selected_hero", "Fady")
 	knight.call("_apply_selected_hero_material")
+	hero_material = (hero_meshes[0] as MeshInstance3D).material_override as StandardMaterial3D
 	assert(hero_material.albedo_color.is_equal_approx(Color(0.92, 0.16, 0.18)), "Fady must use the red material override")
 	root.set_meta("selected_hero", "AlSayed")
 	knight.call("_apply_selected_hero_material")
+	hero_material = (hero_meshes[0] as MeshInstance3D).material_override as StandardMaterial3D
 	assert(hero_material.albedo_color.is_equal_approx(Color(0.12, 0.42, 0.96)), "AlSayed must use the blue material override")
 	root.set_meta("selected_hero", "Lolo")
 	knight.call("_apply_selected_hero_material")
+	hero_material = (hero_meshes[0] as MeshInstance3D).material_override as StandardMaterial3D
 	assert(hero_material.albedo_color.is_equal_approx(Color(0.12, 0.82, 0.38)), "Lolo must remain green after switching back")
 	assert(player.get_node("CollisionShape3D").shape is CapsuleShape3D, "Player must use a capsule collision shape")
 	assert(player.get_node_or_null("Visual") == null, "Old cylinder visual should be removed")
