@@ -22,6 +22,19 @@ func _run() -> void:
 		assert(button.stretch_mode == TextureButton.STRETCH_KEEP_ASPECT_COVERED)
 		assert(button.size_flags_horizontal == 3 and button.size_flags_vertical == 3)
 
+	var preview_colors := {
+		"Preview_Lolo": Color(0.12, 0.82, 0.38),
+		"Preview_Fady": Color(0.92, 0.16, 0.18),
+		"Preview_AlSayed": Color(0.12, 0.42, 0.96)
+	}
+	for preview_name in preview_colors:
+		var preview := select.get_node_or_null(preview_name) as SubViewport
+		assert(preview != null, "Missing 3D preview " + preview_name)
+		var preview_meshes := preview.find_children("*", "MeshInstance3D", true, false)
+		assert(not preview_meshes.is_empty(), "Preview must contain the Louay model")
+		var preview_material := (preview_meshes[0] as MeshInstance3D).material_override as StandardMaterial3D
+		assert(preview_material != null and preview_material.albedo_color.is_equal_approx(preview_colors[preview_name]), "Hero preview has the wrong color: " + preview_name)
+
 	hero_row.get_node("Btn_Lolo").pressed.emit()
 	await process_frame
 	assert(current_scene != null)
@@ -47,6 +60,15 @@ func _run() -> void:
 	assert(not hero_meshes.is_empty(), "Selected hero model should contain visible meshes")
 	var hero_material := (hero_meshes[0] as MeshInstance3D).material_override as StandardMaterial3D
 	assert(hero_material != null and hero_material.albedo_color.is_equal_approx(Color(0.12, 0.82, 0.38)), "Lolo must use the green material override")
+	root.set_meta("selected_hero", "Fady")
+	knight.call("_apply_selected_hero_material")
+	assert(hero_material.albedo_color.is_equal_approx(Color(0.92, 0.16, 0.18)), "Fady must use the red material override")
+	root.set_meta("selected_hero", "AlSayed")
+	knight.call("_apply_selected_hero_material")
+	assert(hero_material.albedo_color.is_equal_approx(Color(0.12, 0.42, 0.96)), "AlSayed must use the blue material override")
+	root.set_meta("selected_hero", "Lolo")
+	knight.call("_apply_selected_hero_material")
+	assert(hero_material.albedo_color.is_equal_approx(Color(0.12, 0.82, 0.38)), "Lolo must remain green after switching back")
 	assert(player.get_node("CollisionShape3D").shape is CapsuleShape3D, "Player must use a capsule collision shape")
 	assert(player.get_node_or_null("Visual") == null, "Old cylinder visual should be removed")
 	var knight := player.get_node("KnightVisual")
