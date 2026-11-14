@@ -7,6 +7,8 @@ var _stone := _mat(Color(0.42, 0.48, 0.52), 0.92)
 var _gold := _mat(Color(0.92, 0.62, 0.19), 0.48, Color(1.0, 0.48, 0.08), 0.7)
 var _blue_glow := _mat(Color(0.28, 0.72, 0.98), 0.22, Color(0.12, 0.58, 1.0), 2.2)
 var _green_glow := _mat(Color(0.32, 0.92, 0.68), 0.28, Color(0.08, 0.9, 0.56), 1.6)
+var _animated_gems: Array[MeshInstance3D] = []
+var _time := 0.0
 
 func _ready() -> void:
 	_rng.seed = 14112026
@@ -17,6 +19,17 @@ func _ready() -> void:
 	_build_lanterns()
 	_build_foreground_flora()
 	_build_mountain_spires()
+	_build_moonlit_stream()
+	_build_waterfalls()
+	_build_rune_rings()
+
+func _process(delta: float) -> void:
+	_time += delta
+	for i in range(_animated_gems.size()):
+		var gem := _animated_gems[i]
+		if is_instance_valid(gem):
+			gem.rotation.y += delta * (0.45 + float(i) * 0.07)
+			gem.position.y += sin(_time * 1.4 + float(i)) * delta * 0.12
 
 func _mat(color: Color, rough: float, emission: Color = Color.BLACK, energy: float = 0.0) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
@@ -82,6 +95,7 @@ func _build_crystal_altars() -> void:
 		crystal.size = Vector3(1.15, 3.4, 1.0)
 		var gem := _mesh_node("AncientCrystal_%02d" % i, crystal, p + Vector3.UP * 2.1, _blue_glow if i % 2 == 0 else _green_glow)
 		gem.rotation.y = float(i) * 0.8
+		_animated_gems.append(gem)
 		var light := OmniLight3D.new()
 		light.name = "CrystalGlow_%02d" % i
 		light.position = p + Vector3.UP * 2.0
@@ -106,7 +120,8 @@ func _build_floating_islands() -> void:
 		_mesh_node("FloatingIsland_%02d" % i, island_mesh, p, island_mat, Vector3(8.0, 2.4, 6.5))
 		var crystal := PrismMesh.new()
 		crystal.size = Vector3(1.2, 3.2, 1.0)
-		_mesh_node("SkyCrystal_%02d" % i, crystal, p + Vector3(0, 3.1, 0), _blue_glow, Vector3.ONE)
+		var sky_gem := _mesh_node("SkyCrystal_%02d" % i, crystal, p + Vector3(0, 3.1, 0), _blue_glow, Vector3.ONE)
+		_animated_gems.append(sky_gem)
 
 func _build_lanterns() -> void:
 	var post := CylinderMesh.new()
@@ -156,3 +171,51 @@ func _build_mountain_spires() -> void:
 	for i in range(locations.size()):
 		var p: Vector3 = locations[i]
 		_mesh_node("DistantMountainSpire_%02d" % i, spire, p, material, Vector3(_rng.randf_range(8.0, 14.0), _rng.randf_range(10.0, 18.0), _rng.randf_range(8.0, 13.0)))
+
+
+func _build_moonlit_stream() -> void:
+	var water_material := _mat(Color(0.08, 0.48, 0.72, 0.82), 0.18, Color(0.04, 0.28, 0.55), 0.55)
+	var stone_material := _mat(Color(0.34, 0.4, 0.39), 0.98)
+	var water := BoxMesh.new()
+	water.size = Vector3(1.0, 0.12, 1.0)
+	var bank_stone := SphereMesh.new()
+	bank_stone.radius = 0.7
+	bank_stone.height = 0.7
+	bank_stone.radial_segments = 7
+	for i in range(26):
+		var z := 19.0 - float(i) * 2.4
+		var x := 34.0 + sin(float(i) * 0.42) * 5.0
+		var segment := _mesh_node("MoonlitStream_%02d" % i, water, Vector3(x, 0.035, z), water_material, Vector3(3.8, 1.0, 2.8))
+		segment.rotation.y = sin(float(i) * 0.42) * 0.22
+		if i % 2 == 0:
+			_mesh_node("StreamBankStone_%02d" % i, bank_stone, Vector3(x - 2.5, 0.22, z), stone_material, Vector3(1.2, 0.55, 0.8))
+			_mesh_node("StreamBankStoneB_%02d" % i, bank_stone, Vector3(x + 2.5, 0.2, z - 0.8), stone_material, Vector3(0.9, 0.45, 1.1))
+
+func _build_waterfalls() -> void:
+	var water_material := _mat(Color(0.28, 0.78, 0.95, 0.72), 0.16, Color(0.12, 0.55, 0.95), 1.25)
+	water_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	var waterfall := BoxMesh.new()
+	waterfall.size = Vector3(2.8, 11.0, 0.22)
+	for i in range(3):
+		var x := -42.0 + float(i) * 42.0
+		var z := -44.0 - float(i % 2) * 12.0
+		_mesh_node("SkyfallWater_%02d" % i, waterfall, Vector3(x, 10.0, z), water_material, Vector3.ONE)
+		var pool := CylinderMesh.new()
+		pool.top_radius = 4.5
+		pool.bottom_radius = 4.8
+		pool.height = 0.18
+		pool.radial_segments = 20
+		_mesh_node("SkyfallPool_%02d" % i, pool, Vector3(x, 0.12, z + 5.0), _blue_glow)
+
+func _build_rune_rings() -> void:
+	var ring_material := _mat(Color(0.2, 0.68, 0.95), 0.25, Color(0.12, 0.5, 1.0), 2.0)
+	var ring := TorusMesh.new()
+	ring.inner_radius = 0.82
+	ring.outer_radius = 1.0
+	ring.rings = 8
+	ring.ring_segments = 24
+	var locations := [Vector3(-18, 0.8, -12), Vector3(19, 0.8, -31), Vector3(-27, 0.8, -49), Vector3(30, 0.8, 18)]
+	for i in range(locations.size()):
+		var rune_ring := _mesh_node("FloatingRuneRing_%02d" % i, ring, locations[i], ring_material, Vector3(1.8, 1.8, 1.8))
+		rune_ring.rotation.x = deg_to_rad(68.0)
+		_animated_gems.append(rune_ring)
