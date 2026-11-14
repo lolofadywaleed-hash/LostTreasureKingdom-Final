@@ -1,0 +1,41 @@
+name: Generate Epic GLB Assets
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/generate_epic_assets.py'
+      - '.github/workflows/generate-epic-assets.yml'
+permissions:
+  contents: write
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Install Blender
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender
+      - name: Generate all 11 GLB assets
+        run: blender -b --python tools/generate_epic_assets.py
+      - name: Validate GLB outputs
+        run: |
+          python3 - <<'PY'
+          import os, struct, glob
+          files=glob.glob('assets/models/epic/**/*.glb',recursive=True)
+          assert len(files)==11, f'Expected 11 GLBs, got {len(files)}'
+          for f in files:
+              with open(f,'rb') as h:
+                  magic,version,length=struct.unpack('<4sII',h.read(12))
+              assert magic==b'glTF' and version==2 and length==os.path.getsize(f), f'Invalid GLB: {f}'
+              print(f, os.path.getsize(f))
+          PY
+      - name: Commit generated assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/models/epic
+          git diff --cached --quiet || git commit -m "Generate 11 procedural epic GLB assets"
+          git push
