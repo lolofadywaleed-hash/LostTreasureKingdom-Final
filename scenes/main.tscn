@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3]
+[gd_scene load_steps=35 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/mobile_hud.tscn" id="2_hud"]
@@ -67,6 +67,33 @@ roughness = 1.0
 radius = 0.42
 height = 1.8
 
+[sub_resource type="PlaneMesh" id="GrassFloorMesh"]
+size = Vector2(220, 180)
+
+[sub_resource type="BoxShape3D" id="GrassFloorCollision"]
+size = Vector3(220, 1, 180)
+
+[sub_resource type="BoxMesh" id="PathMesh"]
+size = Vector3(8, 0.12, 100)
+
+[sub_resource type="CylinderMesh" id="TreeTrunkMesh"]
+top_radius = 0.38
+bottom_radius = 0.38
+height = 3.2
+radial_segments = 12
+
+[sub_resource type="SphereMesh" id="TreeCrownMesh"]
+radius = 1.0
+height = 2.0
+radial_segments = 16
+rings = 8
+
+[sub_resource type="BoxMesh" id="RockWestMesh"]
+size = Vector3(1.8, 0.9, 1.35)
+
+[sub_resource type="BoxMesh" id="RockEastMesh"]
+size = Vector3(1.5, 0.7, 1.2)
+
 [sub_resource type="BoxShape3D" id="WallShapeX"]
 size = Vector3(222, 20, 2)
 
@@ -103,16 +130,21 @@ directional_shadow_mode = 2
 light_angular_distance = 1.5
 shadow_blur = 1.2
 
-[node name="GrassFloor" type="CSGBox3D" parent="."]
-position = Vector3(0, -0.55, 0)
-use_collision = true
-size = Vector3(220, 1, 180)
-material = SubResource("GrassMaterial")
+[node name="GrassFloor" type="MeshInstance3D" parent="."]
+position = Vector3(0, -0.05, 0)
+mesh = SubResource("GrassFloorMesh")
+material_override = SubResource("GrassMaterial")
 
-[node name="Path" type="CSGBox3D" parent="."]
+[node name="FloorCollision" type="StaticBody3D" parent="."]
+position = Vector3(0, -0.55, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorCollision"]
+shape = SubResource("GrassFloorCollision")
+
+[node name="Path" type="MeshInstance3D" parent="."]
 position = Vector3(0, 0.035, -35)
-size = Vector3(8, 0.12, 100)
-material = SubResource("PathMaterial")
+mesh = SubResource("PathMesh")
+material_override = SubResource("PathMaterial")
 
 [node name="Castle" type="Node3D" parent="."]
 position = Vector3(0, 0, -39)
@@ -218,78 +250,72 @@ script = ExtResource("9_enemy")
 [node name="TreeWestNear" type="Node3D" parent="."]
 position = Vector3(-12, 0, 7)
 
-[node name="Trunk" type="CSGCylinder3D" parent="TreeWestNear"]
+[node name="Trunk" type="MeshInstance3D" parent="TreeWestNear"]
 position = Vector3(0, 1.6, 0)
-radius = 0.38
-height = 3.2
-material = SubResource("TrunkMaterial")
+mesh = SubResource("TreeTrunkMesh")
+material_override = SubResource("TrunkMaterial")
 
-[node name="Crown" type="CSGCylinder3D" parent="TreeWestNear"]
+[node name="Crown" type="MeshInstance3D" parent="TreeWestNear"]
 position = Vector3(0, 4, 0)
-radius = 1.8
-height = 3.2
-sides = 10
-material = SubResource("LeafMaterial")
+mesh = SubResource("TreeCrownMesh")
+scale = Vector3(1.8, 1.6, 1.8)
+material_override = SubResource("LeafMaterial")
 
 [node name="TreeEastNear" type="Node3D" parent="."]
 position = Vector3(12, 0, 2)
 
-[node name="Trunk" type="CSGCylinder3D" parent="TreeEastNear"]
+[node name="Trunk" type="MeshInstance3D" parent="TreeEastNear"]
 position = Vector3(0, 1.6, 0)
-radius = 0.38
-height = 3.2
-material = SubResource("TrunkMaterial")
+mesh = SubResource("TreeTrunkMesh")
+material_override = SubResource("TrunkMaterial")
 
-[node name="Crown" type="CSGCylinder3D" parent="TreeEastNear"]
+[node name="Crown" type="MeshInstance3D" parent="TreeEastNear"]
 position = Vector3(0, 4, 0)
-radius = 1.8
-height = 3.2
-sides = 10
-material = SubResource("LeafMaterial")
+mesh = SubResource("TreeCrownMesh")
+scale = Vector3(1.8, 1.6, 1.8)
+material_override = SubResource("LeafMaterial")
 
 [node name="TreeWestFar" type="Node3D" parent="."]
 position = Vector3(-14, 0, -13)
 
-[node name="Trunk" type="CSGCylinder3D" parent="TreeWestFar"]
+[node name="Trunk" type="MeshInstance3D" parent="TreeWestFar"]
 position = Vector3(0, 1.7, 0)
-radius = 0.4
-height = 3.4
-material = SubResource("TrunkMaterial")
+mesh = SubResource("TreeTrunkMesh")
+scale = Vector3(1.05, 1.06, 1.05)
+material_override = SubResource("TrunkMaterial")
 
-[node name="Crown" type="CSGCylinder3D" parent="TreeWestFar"]
+[node name="Crown" type="MeshInstance3D" parent="TreeWestFar"]
 position = Vector3(0, 4.3, 0)
-radius = 1.9
-height = 3.4
-sides = 10
-material = SubResource("LeafMaterial")
+mesh = SubResource("TreeCrownMesh")
+scale = Vector3(1.9, 1.7, 1.9)
+material_override = SubResource("LeafMaterial")
 
 [node name="TreeEastFar" type="Node3D" parent="."]
 position = Vector3(14, 0, -18)
 
-[node name="Trunk" type="CSGCylinder3D" parent="TreeEastFar"]
+[node name="Trunk" type="MeshInstance3D" parent="TreeEastFar"]
 position = Vector3(0, 1.7, 0)
-radius = 0.4
-height = 3.4
-material = SubResource("TrunkMaterial")
+mesh = SubResource("TreeTrunkMesh")
+scale = Vector3(1.05, 1.06, 1.05)
+material_override = SubResource("TrunkMaterial")
 
-[node name="Crown" type="CSGCylinder3D" parent="TreeEastFar"]
+[node name="Crown" type="MeshInstance3D" parent="TreeEastFar"]
 position = Vector3(0, 4.3, 0)
-radius = 1.9
-height = 3.4
-sides = 10
-material = SubResource("LeafMaterial")
+mesh = SubResource("TreeCrownMesh")
+scale = Vector3(1.9, 1.7, 1.9)
+material_override = SubResource("LeafMaterial")
 
-[node name="RockWest" type="CSGBox3D" parent="."]
+[node name="RockWest" type="MeshInstance3D" parent="."]
 position = Vector3(-7, 0.45, -4)
 rotation = Vector3(0.1, 0.35, 0.08)
-size = Vector3(1.8, 0.9, 1.35)
-material = SubResource("StoneMaterial")
+mesh = SubResource("RockWestMesh")
+material_override = SubResource("StoneMaterial")
 
-[node name="RockEast" type="CSGBox3D" parent="."]
+[node name="RockEast" type="MeshInstance3D" parent="."]
 position = Vector3(7, 0.35, -24)
 rotation = Vector3(0.08, -0.2, -0.06)
-size = Vector3(1.5, 0.7, 1.2)
-material = SubResource("StoneMaterial")
+mesh = SubResource("RockEastMesh")
+material_override = SubResource("StoneMaterial")
 
 [node name="Collectibles" type="Node3D" parent="."]
 
