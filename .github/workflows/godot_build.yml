@@ -72,8 +72,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          godot --headless --path . --script res://tests/smoke_test.gd
-          godot --headless --path . --script res://tests/character_select_test.gd
+          echo "Starting scene-load smoke test (120-second limit)"
+          timeout --signal=TERM --kill-after=10s 120s godot --headless --path . --script res://tests/smoke_test.gd
+          echo "Scene-load smoke test passed; starting gameplay and HUD test (240-second limit)"
+          timeout --signal=TERM --kill-after=10s 240s godot --headless --path . --script res://tests/character_select_test.gd
+          echo "All project smoke tests passed."
 
       - name: Export debug APK
         run: |
