@@ -87,6 +87,6 @@ func _build_windows_and_trim() -> void:
 		_box("UpperWindowFrame_%s" % str(x), Vector3(0.9, 1.7, 0.18), Vector3(x, 6.9, 3.0), _gold)
 		_box("UpperWindowGlow_%s" % str(x), Vector3(0.56, 1.32, 0.1), Vector3(x, 6.9, 3.12), _window)
 	for side in [-1.0, 1.0]:
-		var x := side * 6.2
+		var x: float = float(side) * 6.2
 		for y in [4.2, 7.0, 9.7]:
 			_box("TowerSlit_%s_%s" % [str(side), str(y)], Vector3(0.16, 0.95, 0.08), Vector3(x, y, 1.45), _window)
