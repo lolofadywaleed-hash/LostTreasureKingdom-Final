@@ -57,9 +57,9 @@ func _create_hero_preview(hero: Dictionary) -> SubViewport:
 	viewport.add_child(stage)
 	var camera := Camera3D.new()
 	camera.position = Vector3(0, 1.32, 4.4)
-	camera.look_at(Vector3(0, 1.25, 0), Vector3.UP)
 	camera.current = true
 	stage.add_child(camera)
+	camera.look_at(Vector3(0, 1.25, 0), Vector3.UP)
 	var key_light := DirectionalLight3D.new()
 	key_light.rotation_degrees = Vector3(-32, -28, 0)
 	key_light.light_energy = 1.55
