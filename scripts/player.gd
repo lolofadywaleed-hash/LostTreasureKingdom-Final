@@ -42,6 +42,10 @@ var camera_touch_index: int = -1
 var camera_pitch: float = 0.0
 var current_animation: String = ""
 var _spawn_position := Vector3.ZERO
+var is_dodging: bool = false
+var _shadow_dash_remaining: float = 0.0
+var _shadow_dash_direction: Vector3 = Vector3.ZERO
+var _shadow_dash_speed: float = 0.0
 
 
 func _ready() -> void:
@@ -122,7 +126,25 @@ func _physics_process(delta: float) -> void:
 		attacked.emit()
 	if InputMap.has_action("skill") and Input.is_action_just_pressed("skill"):
 		skill_used.emit()
+
+	if _shadow_dash_remaining > 0.0:
+		_shadow_dash_remaining = maxf(0.0, _shadow_dash_remaining - delta)
+		velocity.x = _shadow_dash_direction.x * _shadow_dash_speed
+		velocity.z = _shadow_dash_direction.z * _shadow_dash_speed
+		if _shadow_dash_remaining <= 0.0:
+			is_dodging = false
 	move_and_slide()
+
+
+func start_shadow_dash(duration: float, speed: float) -> void:
+	var forward := -global_transform.basis.z
+	forward.y = 0.0
+	_shadow_dash_direction = forward.normalized()
+	if _shadow_dash_direction.length_squared() < 0.001:
+		_shadow_dash_direction = Vector3.FORWARD
+	_shadow_dash_remaining = maxf(0.05, duration)
+	_shadow_dash_speed = maxf(0.0, speed)
+	is_dodging = true
 
 
 func _on_jump_button_pressed() -> void:
