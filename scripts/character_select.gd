@@ -1,35 +1,46 @@
 extends Control
 
+## يعرض أبطال اللعبة ويخزن اختيار اللاعب قبل فتح مشهد الاختبار.
+
+@onready var hero_container: HBoxContainer = get_node_or_null("MarginContainer/VBoxContainer/HBoxContainer") as HBoxContainer
+
+
 func _ready() -> void:
-	var container := get_node_or_null("MarginContainer/VBoxContainer/HBoxContainer") as HBoxContainer
-	if container == null:
-		push_error("Character selection is missing its hero-card container.")
+	if hero_container == null:
+		push_error("CharacterSelect: لم يتم العثور على حاوية الأبطال.")
 		return
 
-	var characters := [
-		{"name": "Lolo", "path": "res://assets/characters/lolo.png"},
-		{"name": "AlSayed", "path": "res://assets/characters/alsayed.png"},
-		{"name": "Fady", "path": "res://assets/characters/fady.png"}
+	var characters: Array[Dictionary] = [
+		{"name": "Louay", "texture_path": "res://assets/characters/lolo.png"},
+		{"name": "ElSayed", "texture_path": "res://assets/characters/alsayed.png"},
+		{"name": "Fady", "texture_path": "res://assets/characters/fady.png"}
 	]
 
-	for char_data in characters:
-		var button := TextureButton.new()
-		button.name = "Btn_" + char_data["name"]
-		button.texture_normal = load(char_data["path"])
-		button.ignore_texture_size = true
-		button.custom_minimum_size = Vector2(250, 400)
-		button.size_flags_horizontal = 3
-		button.size_flags_vertical = 3
-		button.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_COVERED
-		button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		button.pressed.connect(_on_character_pressed.bind(char_data["name"]))
-		container.add_child(button)
+	for character_data in characters:
+		var texture_button := TextureButton.new()
+		var hero_id: String = character_data["name"]
+		var texture_path: String = character_data["texture_path"]
+		var hero_texture := load(texture_path) as Texture2D
+		if hero_texture == null:
+			push_warning("CharacterSelect: تعذر تحميل صورة %s" % texture_path)
+			continue
+		texture_button.name = "Btn_" + hero_id
+		texture_button.texture_normal = hero_texture
+		texture_button.ignore_texture_size = true
+		texture_button.custom_minimum_size = Vector2(250.0, 400.0)
+		texture_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		texture_button.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		texture_button.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_COVERED
+		texture_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		texture_button.pressed.connect(_on_hero_pressed.bind(hero_id))
+		hero_container.add_child(texture_button)
 
-func _on_character_pressed(char_name: String) -> void:
-	if char_name not in ["Lolo", "AlSayed", "Fady"]:
-		push_error("Unknown hero selected: " + char_name)
+
+func _on_hero_pressed(hero_id: String) -> void:
+	if hero_id not in ["Louay", "ElSayed", "Fady"]:
+		push_error("CharacterSelect: بطل غير معروف: " + hero_id)
 		return
-	get_tree().root.set_meta("selected_hero", char_name)
-	var err := get_tree().change_scene_to_file("res://scenes/main.tscn")
-	if err != OK:
-		push_error("Could not open res://scenes/main.tscn (error %s)." % err)
+	get_tree().root.set_meta("selected_hero", hero_id)
+	var scene_error := get_tree().change_scene_to_file("res://scenes/main.tscn")
+	if scene_error != OK:
+		push_error("CharacterSelect: تعذر فتح main.tscn. Error: %s" % scene_error)
