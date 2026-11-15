@@ -50,6 +50,7 @@ signal attack_requested(damage: float)
 @onready var health_component: Node = get_node_or_null("HealthSystem")
 @onready var animation_player: AnimationPlayer = _find_animation_player()
 
+var selected_hero: String = "Lolo"
 var current_health: float = 120.0
 var coins_collected: int = 0
 var jump_requested: bool = false
@@ -69,6 +70,13 @@ func _ready() -> void:
 	floor_snap_length = 0.25
 	_spawn_position = global_position
 	configure_hero()
+	match hero_name:
+		&"louay":
+			selected_hero = "Lolo"
+		&"fady":
+			selected_hero = "Fady"
+		&"elsayed":
+			selected_hero = "AlSayed"
 	_base_move_speed = move_speed
 	current_health = max_health
 	if health_component != null and health_component.has_method("configure_health"):
