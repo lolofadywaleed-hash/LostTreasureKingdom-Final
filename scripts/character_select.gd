@@ -11,8 +11,8 @@ func _ready() -> void:
 		return
 
 	var characters: Array[Dictionary] = [
-		{"name": "Louay", "texture_path": "res://assets/characters/lolo.png"},
-		{"name": "ElSayed", "texture_path": "res://assets/characters/alsayed.png"},
+		{"name": "Lolo", "texture_path": "res://assets/characters/lolo.png"},
+		{"name": "AlSayed", "texture_path": "res://assets/characters/alsayed.png"},
 		{"name": "Fady", "texture_path": "res://assets/characters/fady.png"}
 	]
 
@@ -37,7 +37,7 @@ func _ready() -> void:
 
 
 func _on_hero_pressed(hero_id: String) -> void:
-	if hero_id not in ["Louay", "ElSayed", "Fady"]:
+	if hero_id not in ["Lolo", "AlSayed", "Fady"]:
 		push_error("CharacterSelect: بطل غير معروف: " + hero_id)
 		return
 	get_tree().root.set_meta("selected_hero", hero_id)
