@@ -9,6 +9,8 @@ signal died
 
 var current_health: int
 var _invulnerable := false
+var _shield_active: bool = false
+var _shield_generation: int = 0
 var _player: CharacterBody3D
 var _hud_layer: CanvasLayer
 var _hearts_label: Label
@@ -25,6 +27,10 @@ func _ready() -> void:
 func take_damage(amount: int = 1) -> void:
 	if current_health <= 0 or _invulnerable or amount <= 0:
 		return
+	if _shield_active:
+		return
+	if is_instance_valid(_player) and bool(_player.get("is_dodging")):
+		return
 	current_health = maxi(0, current_health - amount)
 	_update_display()
 	health_changed.emit(current_health, max_health)
@@ -34,6 +40,15 @@ func take_damage(amount: int = 1) -> void:
 		_invulnerable = true
 		await get_tree().create_timer(damage_invulnerability).timeout
 		_invulnerable = false
+
+
+func activate_shield(duration: float = 3.0) -> void:
+	_shield_generation += 1
+	var generation := _shield_generation
+	_shield_active = true
+	await get_tree().create_timer(maxf(0.1, duration)).timeout
+	if generation == _shield_generation:
+		_shield_active = false
 
 
 func heal(amount: int = 1) -> void:
