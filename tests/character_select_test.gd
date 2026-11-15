@@ -56,6 +56,38 @@ func _run() -> void:
 	var player := current_scene.get_node("Player") as CharacterBody3D
 	assert(player != null, "Main scene needs a CharacterBody3D player")
 	assert(player.selected_hero == "Lolo", "Player should receive the selected hero")
+	var ability_system := player.get_node_or_null("AbilitySystem")
+	assert(ability_system != null, "Player should have the character-specific AbilitySystem")
+	var health_system := player.get_node("HealthSystem")
+	var ability_hud := current_scene.get_node("MobileHUD")
+	var ability_label := ability_hud.get_node("Root/SkillButton/Label") as Label
+	health_system.set("_invulnerable", false)
+	var health_before_dash := int(health_system.get("current_health"))
+	player.skill_used.emit()
+	assert(bool(player.get("is_dodging")), "Louay's skill should start the shadow dash")
+	assert(ability_label.text != "⚡", "Skill HUD should show the cooldown after activation")
+	health_system.call("take_damage", 1)
+	assert(int(health_system.get("current_health")) == health_before_dash, "Shadow dash should avoid incoming damage")
+	for _dash_frame in range(20):
+		await physics_frame
+	assert(not bool(player.get("is_dodging")), "Shadow dash should end after its short duration")
+
+	enemy.global_position = player.global_position + Vector3(0.0, 0.0, -2.0)
+	ability_system.set("_cooldown_remaining", 0.0)
+	player.set("selected_hero", "Fady")
+	var enemy_health_before_blast := int(enemy.get("_health"))
+	player.skill_used.emit()
+	assert(int(enemy.get("_health")) == enemy_health_before_blast - 2, "Fady's fire blast should damage nearby enemies in the enemies group")
+
+	ability_system.set("_cooldown_remaining", 0.0)
+	player.set("selected_hero", "AlSayed")
+	health_system.set("_invulnerable", false)
+	var health_before_shield := int(health_system.get("current_health"))
+	player.skill_used.emit()
+	assert(bool(health_system.get("_shield_active")), "AlSayed's skill should activate the energy shield")
+	health_system.call("take_damage", 1)
+	assert(int(health_system.get("current_health")) == health_before_shield, "Energy shield should absorb incoming damage")
+	player.set("selected_hero", "Lolo")
 	var knight := player.get_node("KnightVisual")
 	var hero_meshes := knight.get_child(0).find_children("*", "MeshInstance3D", true, false)
 	assert(not hero_meshes.is_empty(), "Selected hero model should contain visible meshes")
