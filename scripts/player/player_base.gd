@@ -83,7 +83,7 @@ func _ready() -> void:
 		camera_pitch = clampf(camera_pivot.rotation.x, deg_to_rad(min_camera_pitch), deg_to_rad(max_camera_pitch))
 		camera_pivot.rotation.x = camera_pitch
 	if knight_visual != null:
-		_apply_hero_material.call_deferred()
+		call_deferred("_apply_hero_material")
 	hero_changed.emit(hero_name)
 	print("Hero ready: %s | HP: %.0f | Speed: %.2f" % [hero_name, max_health, move_speed])
 
