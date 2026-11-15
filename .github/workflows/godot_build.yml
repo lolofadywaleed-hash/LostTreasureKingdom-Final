@@ -1,3 +1,4 @@
+# Trigger a fresh Android APK validation on main.
 name: Godot 4.3 Android APK
 on:
   push:
