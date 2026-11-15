@@ -13,6 +13,7 @@ const IDLE_ALPHA := 0.8
 @onready var attack_button: Control = $Root/AttackButton
 @onready var jump_button: BaseButton = $Root/JumpButton
 @onready var skill_button: Control = $Root/SkillButton
+@onready var skill_label: Label = $Root/SkillButton/Label
 @onready var coin_panel: Control = $Root/CoinPanel
 @onready var coins_label: Label = $Root/CoinPanel/CoinLabel
 
@@ -56,6 +57,17 @@ func update_coins(amount: int) -> void:
 	_coin_tween = create_tween()
 	_coin_tween.tween_property(coin_panel, "scale", Vector2(1.15, 1.15), 0.08)
 	_coin_tween.tween_property(coin_panel, "scale", Vector2.ONE, 0.12)
+
+func update_skill_cooldown(remaining: float, total: float, hero_name: String) -> void:
+	if not is_instance_valid(skill_label):
+		return
+	if remaining > 0.0:
+		skill_label.text = "%.0f" % ceilf(remaining)
+		skill_button.modulate = Color(0.62, 0.62, 0.68, 0.9)
+	else:
+		skill_label.text = "⚡"
+		skill_button.modulate = Color(1.0, 1.0, 1.0, 1.0)
+
 
 func _on_jump_button_pressed() -> void:
 	jump_pressed.emit()
