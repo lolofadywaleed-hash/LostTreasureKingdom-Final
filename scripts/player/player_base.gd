@@ -13,6 +13,7 @@ signal attack_requested(damage: float)
 @export var hero_name: StringName = &"louay"
 @export var hero_color: Color = Color(0.10, 0.90, 0.20)
 @export_range(1.0, 500.0, 1.0) var max_health: float = 120.0
+@export_range(1.0, 100.0, 1.0) var health_points_per_heart: float = 30.0
 @export_range(0.1, 20.0, 0.1) var move_speed: float = 6.0
 
 @export_group("Movement")
@@ -46,6 +47,7 @@ signal attack_requested(damage: float)
 
 @onready var camera_pivot: Node3D = get_node_or_null("CameraPivot") as Node3D
 @onready var knight_visual: Node3D = get_node_or_null("KnightVisual") as Node3D
+@onready var health_component: Node = get_node_or_null("HealthSystem")
 @onready var animation_player: AnimationPlayer = _find_animation_player()
 
 var current_health: float = 120.0
@@ -69,6 +71,9 @@ func _ready() -> void:
 	configure_hero()
 	_base_move_speed = move_speed
 	current_health = max_health
+	if health_component != null and health_component.has_method("configure_health"):
+		var heart_count := clampi(roundi(max_health / health_points_per_heart), 1, 10)
+		health_component.call("configure_health", heart_count)
 	_state_machine = StateMachine.new()
 	_state_machine.name = "StateMachine"
 	add_child(_state_machine)
