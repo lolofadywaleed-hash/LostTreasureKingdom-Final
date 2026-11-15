@@ -9,7 +9,7 @@ func _ready() -> void:
 		push_error("Character selection is missing its hero-card container.")
 		return
 	var characters := [
-		{"name": "Lolo", "label": "لولو", "color": Color(0.12, 0.82, 0.38)},
+		{"name": "Lolo", "label": "لؤي", "color": Color(0.12, 0.82, 0.38)},
 		{"name": "Fady", "label": "فادي", "color": Color(0.92, 0.16, 0.18)},
 		{"name": "AlSayed", "label": "السيد", "color": Color(0.12, 0.42, 0.96)}
 	]
