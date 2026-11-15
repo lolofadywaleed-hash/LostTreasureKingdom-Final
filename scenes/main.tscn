@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3]
+[gd_scene load_steps=36 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/mobile_hud.tscn" id="2_hud"]
@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://scripts/player_health.gd" id="7_health"]
 [ext_resource type="Script" path="res://scripts/attack.gd" id="8_attack"]
 [ext_resource type="Script" path="res://scripts/enemy.gd" id="9_enemy"]
+[ext_resource type="Script" path="res://scripts/character_abilities.gd" id="13_abilities"]
 [ext_resource type="Script" path="res://scripts/visual_world.gd" id="10_visual_world"]
 [ext_resource type="Script" path="res://scripts/enchanting_world.gd" id="11_enchanting_world"]
 [ext_resource type="Script" path="res://scripts/castle_visual.gd" id="12_castle_visual"]
@@ -222,6 +223,9 @@ script = ExtResource("7_health")
 
 [node name="AttackSystem" type="Node" parent="Player"]
 script = ExtResource("8_attack")
+
+[node name="AbilitySystem" type="Node" parent="Player"]
+script = ExtResource("13_abilities")
 
 [node name="KnightVisual" type="Node3D" parent="Player"]
 script = ExtResource("6_knight_visual")
