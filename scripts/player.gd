@@ -55,16 +55,15 @@ func _ready() -> void:
 	selected_hero = str(get_tree().root.get_meta("selected_hero", "Lolo"))
 	print("Selected hero: ", selected_hero)
 	var visual_driver := get_node_or_null("KnightVisual")
-	if visual_driver != null:
-		visual_driver.set_physics_process(false)
 	if camera_pivot:
 		camera_pitch = clampf(camera_pivot.rotation.x, deg_to_rad(min_camera_pitch), deg_to_rad(max_camera_pitch))
 		camera_pivot.rotation = Vector3(camera_pitch, camera_pivot.rotation.y, 0.0)
 	else:
 		push_warning("CameraPivot was not found!")
 	if animation_player:
-		_play_animation(idle_animation)
-		print("Louay AnimationPlayer found! Available animations: ", animation_player.get_animation_list())
+		if visual_driver == null:
+			_play_animation(idle_animation)
+		print("Character AnimationPlayer found! Available animations: ", animation_player.get_animation_list())
 	else:
 		push_warning("AnimationPlayer was not found inside Louay model!")
 
@@ -116,16 +115,32 @@ func _physics_process(delta: float) -> void:
 		velocity.z = move_toward(velocity.z, target_velocity.z, acceleration * delta)
 		var target_angle := atan2(direction.x, -direction.z)
 		rotation.y = lerp_angle(rotation.y, target_angle, rotation_speed * delta)
-		_play_animation(walk_animation)
+		if get_node_or_null("KnightVisual") == null:
+			_play_animation(walk_animation)
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, deceleration * delta)
 		velocity.z = move_toward(velocity.z, 0.0, deceleration * delta)
-		_play_animation(idle_animation)
+		if get_node_or_null("KnightVisual") == null:
+			_play_animation(idle_animation)
 
 	if InputMap.has_action("attack") and Input.is_action_just_pressed("attack"):
+		var visual_driver := get_node_or_null("KnightVisual")
+		if visual_driver != null and visual_driver.has_method("play_action_animation"):
+			visual_driver.call("play_action_animation", "Attack", 0.36)
+		elif visual_driver == null:
+			_play_animation("Attack")
 		attacked.emit()
 	if InputMap.has_action("skill") and Input.is_action_just_pressed("skill"):
 		skill_used.emit()
+
+	var weapon_manager := get_node_or_null("WeaponManager")
+	if weapon_manager != null:
+		if InputMap.has_action("weapon_1") and Input.is_action_just_pressed("weapon_1"):
+			weapon_manager.call("select_weapon", 0)
+		elif InputMap.has_action("weapon_2") and Input.is_action_just_pressed("weapon_2"):
+			weapon_manager.call("select_weapon", 1)
+		elif InputMap.has_action("weapon_3") and Input.is_action_just_pressed("weapon_3"):
+			weapon_manager.call("select_weapon", 2)
 
 	if _shadow_dash_remaining > 0.0:
 		_shadow_dash_remaining = maxf(0.0, _shadow_dash_remaining - delta)

@@ -14,6 +14,12 @@ const IDLE_ALPHA := 0.8
 @onready var jump_button: BaseButton = $Root/JumpButton
 @onready var skill_button: Control = $Root/SkillButton
 @onready var skill_label: Label = $Root/SkillButton/Label
+@onready var weapon_1_button: Control = $Root/Weapon1Button
+@onready var weapon_2_button: Control = $Root/Weapon2Button
+@onready var weapon_3_button: Control = $Root/Weapon3Button
+@onready var weapon_1_label: Label = $Root/Weapon1Button/Label
+@onready var weapon_2_label: Label = $Root/Weapon2Button/Label
+@onready var weapon_3_label: Label = $Root/Weapon3Button/Label
 @onready var coin_panel: Control = $Root/CoinPanel
 @onready var coins_label: Label = $Root/CoinPanel/CoinLabel
 
@@ -23,16 +29,20 @@ var _joystick_touch := -1
 var _joystick_center := Vector2.ZERO
 var _move_vector := Vector2.ZERO
 var _coin_tween: Tween
+var _selected_weapon_index: int = 0
 
 
 func _ready() -> void:
-	for action_name in ["jump", "attack", "skill"]:
+	for action_name in ["jump", "attack", "skill", "weapon_1", "weapon_2", "weapon_3"]:
 		if not InputMap.has_action(action_name):
 			InputMap.add_action(action_name)
 	_buttons = {
 		"attack": attack_button,
 		"jump": jump_button,
 		"skill": skill_button,
+		"weapon_1": weapon_1_button,
+		"weapon_2": weapon_2_button,
+		"weapon_3": weapon_3_button,
 	}
 	for action_name in _buttons:
 		var node: Control = _buttons[action_name]
@@ -40,6 +50,7 @@ func _ready() -> void:
 		_set_button_pressed(action_name, false)
 	joystick_base.visible = false
 	coins_label.text = "Coins: 0"
+	update_weapon_selection(0, "Shadow Blade")
 
 func _exit_tree() -> void:
 	_reset_all()
@@ -67,6 +78,17 @@ func update_skill_cooldown(remaining: float, total: float, hero_name: String) ->
 	else:
 		skill_label.text = "⚡"
 		skill_button.modulate = Color(1.0, 1.0, 1.0, 1.0)
+
+
+
+func update_weapon_selection(index: int, weapon_name: String) -> void:
+	_selected_weapon_index = clampi(index, 0, 2)
+	var buttons: Array[Control] = [weapon_1_button, weapon_2_button, weapon_3_button]
+	var labels: Array[Label] = [weapon_1_label, weapon_2_label, weapon_3_label]
+	for i in range(buttons.size()):
+		buttons[i].modulate = Color(1.0, 0.86, 0.45, 1.0) if i == _selected_weapon_index else Color(1.0, 1.0, 1.0, IDLE_ALPHA)
+		buttons[i].tooltip_text = weapon_name if i == _selected_weapon_index else "Weapon %d" % (i + 1)
+		labels[i].text = ["I", "II", "III"][i]
 
 
 func _on_jump_button_pressed() -> void:
@@ -150,7 +172,11 @@ func _button_at(pos: Vector2) -> String:
 
 func _set_button_pressed(action_name: String, pressed: bool) -> void:
 	var node: Control = _buttons[action_name]
-	node.modulate = Color(1, 1, 1, 1.0 if pressed else IDLE_ALPHA)
+	if action_name.begins_with("weapon_") and not pressed:
+		var slot := int(action_name.trim_prefix("weapon_")) - 1
+		node.modulate = Color(1.0, 0.86, 0.45, 1.0) if slot == _selected_weapon_index else Color(1, 1, 1, IDLE_ALPHA)
+	else:
+		node.modulate = Color(1, 1, 1, 1.0 if pressed else IDLE_ALPHA)
 	node.scale = Vector2.ONE * (0.92 if pressed else 1.0)
 
 func _reset_all() -> void:

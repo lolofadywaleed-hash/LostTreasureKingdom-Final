@@ -32,8 +32,9 @@ func _run() -> void:
 		assert(preview != null, "Missing 3D preview " + preview_name)
 		var preview_meshes := preview.find_children("*", "MeshInstance3D", true, false)
 		assert(not preview_meshes.is_empty(), "Preview must contain the Louay model")
-		var preview_material := (preview_meshes[0] as MeshInstance3D).material_override as StandardMaterial3D
-		assert(preview_material != null and preview_material.albedo_color.is_equal_approx(preview_colors[preview_name]), "Hero preview has the wrong color: " + preview_name)
+		var preview_material := (preview_meshes[0] as MeshInstance3D).material_overlay as StandardMaterial3D
+		var expected_preview := preview_colors[preview_name]
+		assert(preview_material != null and preview_material.albedo_color.is_equal_approx(Color(expected_preview.r, expected_preview.g, expected_preview.b, 0.16)), "Hero preview tint has the wrong color: " + preview_name)
 
 	hero_row.get_node("Btn_Lolo").pressed.emit()
 	await process_frame
@@ -56,6 +57,18 @@ func _run() -> void:
 	var player := current_scene.get_node("Player") as CharacterBody3D
 	assert(player != null, "Main scene needs a CharacterBody3D player")
 	assert(player.selected_hero == "Lolo", "Player should receive the selected hero")
+	var weapon_manager := player.get_node_or_null("WeaponManager")
+	assert(weapon_manager != null, "Player should have the three-slot WeaponManager")
+	var attack_system := player.get_node("AttackSystem")
+	var weapon_hud := current_scene.get_node("MobileHUD")
+	assert(weapon_hud.get_node_or_null("Root/Weapon1Button") != null and weapon_hud.get_node_or_null("Root/Weapon2Button") != null and weapon_hud.get_node_or_null("Root/Weapon3Button") != null, "HUD should expose all three weapon slots")
+	weapon_manager.call("select_weapon", 1)
+	assert(int(weapon_manager.get("current_weapon_index")) == 1, "Weapon slot 2 should be selectable")
+	assert(int(attack_system.get("damage")) == 2, "Secondary weapon should update attack damage")
+	weapon_manager.call("select_weapon", 2)
+	assert(float(attack_system.get("attack_range")) >= 8.0, "Ranged weapon should increase attack reach")
+	assert(weapon_hud.get_node("Root/Weapon3Button").tooltip_text == "Phantom Bow", "HUD should display the equipped ranged weapon")
+	weapon_manager.call("select_weapon", 0)
 	var ability_system := player.get_node_or_null("AbilitySystem")
 	assert(ability_system != null, "Player should have the character-specific AbilitySystem")
 	var health_system := player.get_node("HealthSystem")
@@ -91,20 +104,20 @@ func _run() -> void:
 	var knight := player.get_node("KnightVisual")
 	var hero_meshes := knight.get_child(0).find_children("*", "MeshInstance3D", true, false)
 	assert(not hero_meshes.is_empty(), "Selected hero model should contain visible meshes")
-	var hero_material := (hero_meshes[0] as MeshInstance3D).material_override as StandardMaterial3D
-	assert(hero_material != null and hero_material.albedo_color.is_equal_approx(Color(0.12, 0.82, 0.38)), "Lolo must use the green material override")
+	var hero_material := (hero_meshes[0] as MeshInstance3D).material_overlay as StandardMaterial3D
+	assert(hero_material != null and hero_material.albedo_color.is_equal_approx(Color(0.12, 0.82, 0.38, 0.16)), "Lolo must use the green texture-preserving tint")
 	root.set_meta("selected_hero", "Fady")
 	knight.call("_apply_selected_hero_material")
-	hero_material = (hero_meshes[0] as MeshInstance3D).material_override as StandardMaterial3D
-	assert(hero_material.albedo_color.is_equal_approx(Color(0.92, 0.16, 0.18)), "Fady must use the red material override")
+	hero_material = (hero_meshes[0] as MeshInstance3D).material_overlay as StandardMaterial3D
+	assert(hero_material.albedo_color.is_equal_approx(Color(0.92, 0.16, 0.18, 0.16)), "Fady must use the red material override")
 	root.set_meta("selected_hero", "AlSayed")
 	knight.call("_apply_selected_hero_material")
 	hero_material = (hero_meshes[0] as MeshInstance3D).material_override as StandardMaterial3D
-	assert(hero_material.albedo_color.is_equal_approx(Color(0.12, 0.42, 0.96)), "AlSayed must use the blue material override")
+	assert(hero_material.albedo_color.is_equal_approx(Color(0.12, 0.42, 0.96, 0.16)), "AlSayed must use the blue material override")
 	root.set_meta("selected_hero", "Lolo")
 	knight.call("_apply_selected_hero_material")
 	hero_material = (hero_meshes[0] as MeshInstance3D).material_override as StandardMaterial3D
-	assert(hero_material.albedo_color.is_equal_approx(Color(0.12, 0.82, 0.38)), "Lolo must remain green after switching back")
+	assert(hero_material.albedo_color.is_equal_approx(Color(0.12, 0.82, 0.38, 0.16)), "Lolo must remain green after switching back")
 	assert(player.get_node("CollisionShape3D").shape is CapsuleShape3D, "Player must use a capsule collision shape")
 	assert(player.get_node_or_null("Visual") == null, "Old cylinder visual should be removed")
 	assert(knight.get_child_count() > 0, "Knight model should be instanced under KnightVisual")

@@ -254,4 +254,79 @@ text = "⚡"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="Weapon1Button" type="Panel" parent="Root"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -105.0
+offset_top = -112.0
+offset_right = -45.0
+offset_bottom = -52.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("SkillStyle")
+
+[node name="Label" type="Label" parent="Root/Weapon1Button"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 20
+text = "I"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Weapon2Button" type="Panel" parent="Root"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -30.0
+offset_top = -112.0
+offset_right = 30.0
+offset_bottom = -52.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("SkillStyle")
+
+[node name="Label" type="Label" parent="Root/Weapon2Button"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 20
+text = "II"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Weapon3Button" type="Panel" parent="Root"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = 45.0
+offset_top = -112.0
+offset_right = 105.0
+offset_bottom = -52.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("SkillStyle")
+
+[node name="Label" type="Label" parent="Root/Weapon3Button"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 20
+text = "III"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [connection signal="pressed" from="Root/JumpButton" to="." method="_on_jump_button_pressed"]

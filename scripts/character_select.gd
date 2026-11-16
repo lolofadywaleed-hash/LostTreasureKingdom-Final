@@ -1,6 +1,11 @@
 extends Control
 
 const HERO_MODEL_PATH := "res://assets/models/louay_rigged_animated.glb"
+const HERO_MODEL_PATHS := {
+	"Lolo": "res://assets/models/louay_rigged_animated.glb",
+	"Fady": "res://assets/models/fady_rigged_animated.glb",
+	"AlSayed": "res://assets/models/alsayed_rigged_animated.glb"
+}
 const PREVIEW_HEIGHT := 2.55
 
 func _ready() -> void:
@@ -70,7 +75,10 @@ func _create_hero_preview(hero: Dictionary) -> SubViewport:
 	fill_light.light_energy = 0.7
 	fill_light.omni_range = 7.0
 	stage.add_child(fill_light)
-	var packed := load(HERO_MODEL_PATH) as PackedScene
+	var selected_path := str(HERO_MODEL_PATHS.get(str(hero["name"]), HERO_MODEL_PATH))
+	if not ResourceLoader.exists(selected_path):
+		selected_path = HERO_MODEL_PATH
+	var packed := load(selected_path) as PackedScene
 	if packed == null:
 		push_error("Could not load hero model: " + HERO_MODEL_PATH)
 		return viewport
@@ -87,11 +95,12 @@ func _create_hero_preview(hero: Dictionary) -> SubViewport:
 
 func _apply_hero_material(model: Node3D, hero_color: Color) -> void:
 	var material := StandardMaterial3D.new()
-	material.albedo_color = hero_color
+	material.albedo_color = Color(hero_color.r, hero_color.g, hero_color.b, 0.16)
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	material.roughness = 0.68
 	material.metallic = 0.08
 	for item in model.find_children("*", "MeshInstance3D", true, false):
-		(item as MeshInstance3D).material_override = material
+		(item as MeshInstance3D).material_overlay = material
 
 func _fit_preview_model(model: Node3D) -> void:
 	var bounds := AABB()

@@ -23,6 +23,9 @@ move_back={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":83)]
 jump={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":32)]}
 attack={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":70)]}
 skill={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":81)]}
+weapon_1={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":49)]}
+weapon_2={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":50)]}
+weapon_3={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":51)]}
 
 [rendering]
 renderer/rendering_method="mobile"
