@@ -53,6 +53,10 @@ func get_weapon_definitions() -> Array:
 func select_weapon(index: int) -> void:
 	if index < 0 or index > 2 or not is_instance_valid(_player):
 		return
+	if _attack_system == null:
+		_attack_system = _player.get_node_or_null("AttackSystem")
+	if _hud == null:
+		_hud = get_tree().current_scene.get_node_or_null("MobileHUD")
 	var definitions := get_weapon_definitions()
 	var definition: Dictionary = definitions[index]
 	current_weapon_index = index

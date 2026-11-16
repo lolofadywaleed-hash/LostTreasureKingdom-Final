@@ -270,6 +270,7 @@ func _play(state: String) -> void:
 		"jump": ["jump"],
 		"run": ["run", "walk"],
 		"walk": ["walk", "run"],
+		"attack": ["attack"],
 		"idle": ["idle"],
 	}
 	var clip := ""
