@@ -157,6 +157,7 @@ func _add_sphere(label: String, radius_value: float, local_pos: Vector3, materia
 func _add_mesh(label: String, mesh: Mesh, material: Material, local_pos: Vector3) -> MeshInstance3D:
 	var node := MeshInstance3D.new()
 	node.name = label
+	node.add_to_group("weapon_visual")
 	node.mesh = mesh
 	node.material_override = material
 	node.position = local_pos

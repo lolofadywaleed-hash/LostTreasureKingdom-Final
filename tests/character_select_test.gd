@@ -104,11 +104,18 @@ func _run() -> void:
 	var knight := player.get_node("KnightVisual")
 	var hero_meshes := knight.get_child(0).find_children("*", "MeshInstance3D", true, false)
 	assert(not hero_meshes.is_empty(), "Selected hero model should contain visible meshes")
-	var hero_material := (hero_meshes[0] as MeshInstance3D).material_overlay as StandardMaterial3D
+	var hero_mesh: MeshInstance3D
+	for mesh_node in hero_meshes:
+		var candidate := mesh_node as MeshInstance3D
+		if candidate.material_overlay is StandardMaterial3D:
+			hero_mesh = candidate
+			break
+	assert(hero_mesh != null, "Character model should retain a texture-preserving tint overlay")
+	var hero_material := hero_mesh.material_overlay as StandardMaterial3D
 	assert(hero_material != null and hero_material.albedo_color.is_equal_approx(Color(0.12, 0.82, 0.38, 0.16)), "Lolo must use the green texture-preserving tint")
 	root.set_meta("selected_hero", "Fady")
 	knight.call("_apply_selected_hero_material")
-	hero_material = (hero_meshes[0] as MeshInstance3D).material_overlay as StandardMaterial3D
+	hero_material = hero_mesh.material_overlay as StandardMaterial3D
 	assert(hero_material.albedo_color.is_equal_approx(Color(0.92, 0.16, 0.18, 0.16)), "Fady must use the red material override")
 	root.set_meta("selected_hero", "AlSayed")
 	knight.call("_apply_selected_hero_material")

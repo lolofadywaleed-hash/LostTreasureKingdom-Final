@@ -86,6 +86,8 @@ func _apply_selected_hero_material() -> void:
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
 	for item in _model.find_children("*", "MeshInstance3D", true, false):
+		if item.is_in_group("weapon_visual"):
+			continue
 		(item as MeshInstance3D).material_overlay = material
 		count += 1
 	_log("hero material applied: %s (%d mesh instances)" % [hero_id, count])
