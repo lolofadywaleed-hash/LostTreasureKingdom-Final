@@ -33,7 +33,7 @@ func _run() -> void:
 		var preview_meshes := preview.find_children("*", "MeshInstance3D", true, false)
 		assert(not preview_meshes.is_empty(), "Preview must contain the Louay model")
 		var preview_material := (preview_meshes[0] as MeshInstance3D).material_overlay as StandardMaterial3D
-		var expected_preview := preview_colors[preview_name]
+		var expected_preview: Color = preview_colors[preview_name]
 		assert(preview_material != null and preview_material.albedo_color.is_equal_approx(Color(expected_preview.r, expected_preview.g, expected_preview.b, 0.16)), "Hero preview tint has the wrong color: " + preview_name)
 
 	hero_row.get_node("Btn_Lolo").pressed.emit()

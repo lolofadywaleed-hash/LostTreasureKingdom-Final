@@ -57,7 +57,13 @@ jobs:
           set -euo pipefail
           keytool -genkeypair -v -keystore debug.keystore -storepass androiduser -alias androiddebugkey -keypass androiduser -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
           mkdir -p "${HOME}/.config/godot"
-          printf 'export/android/android_sdk_path = "%s"\nexport/android/java_sdk_path = "%s"\n' "${ANDROID_HOME}" "${JAVA_HOME}" > "${HOME}/.config/godot/editor_settings-4.tres"
+          cat > "${HOME}/.config/godot/editor_settings-4.tres" <<EOF
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/android_sdk_path = "${ANDROID_HOME}"
+          export/android/java_sdk_path = "${JAVA_HOME}"
+          EOF
 
       - name: Import project resources
         run: godot --headless --editor --path . --import --quit

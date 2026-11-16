@@ -23,6 +23,8 @@ func _run() -> void:
 			_failures.append("%s: ResourceLoader returned null" % script_path)
 		elif not resource is GDScript:
 			_failures.append("%s: resource is not a GDScript" % script_path)
+		elif not (resource as GDScript).can_instantiate():
+			_failures.append("%s: GDScript cannot be instantiated (possible parse error)" % script_path)
 
 	if _script_paths.is_empty():
 		_failures.append("No GDScript files were discovered.")
