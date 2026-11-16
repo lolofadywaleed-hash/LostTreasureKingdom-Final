@@ -77,7 +77,8 @@ func _create_hero_preview(hero: Dictionary) -> SubViewport:
 	stage.add_child(fill_light)
 	var selected_path := str(HERO_MODEL_PATHS.get(str(hero["name"]), HERO_MODEL_PATH))
 	if not ResourceLoader.exists(selected_path):
-		selected_path = HERO_MODEL_PATH
+		push_warning("CharacterSelect: independent model is not installed for %s; no substitute will be shown." % str(hero["name"]))
+		return viewport
 	var packed := load(selected_path) as PackedScene
 	if packed == null:
 		push_error("Could not load hero model: " + HERO_MODEL_PATH)
@@ -88,7 +89,8 @@ func _create_hero_preview(hero: Dictionary) -> SubViewport:
 		return viewport
 	stage.add_child(model)
 	model.rotation_degrees.y = 180.0
-	_apply_hero_material(model, hero["color"])
+	if str(hero["name"]) == "Lolo":
+		_apply_hero_material(model, hero["color"])
 	await get_tree().process_frame
 	_fit_preview_model(model)
 	return viewport
@@ -125,6 +127,10 @@ func _fit_preview_model(model: Node3D) -> void:
 func _on_character_pressed(char_name: String) -> void:
 	if char_name not in ["Lolo", "Fady", "AlSayed"]:
 		push_error("Unknown hero selected: " + char_name)
+		return
+	var selected_path := str(HERO_MODEL_PATHS.get(char_name, HERO_MODEL_PATH))
+	if not ResourceLoader.exists(selected_path):
+		push_warning("Cannot select %s: its independent GLB model has not been added yet." % char_name)
 		return
 	get_tree().root.set_meta("selected_hero", char_name)
 	var err := get_tree().change_scene_to_file("res://scenes/main.tscn")

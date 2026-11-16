@@ -45,8 +45,8 @@ func _ready() -> void:
 	_hero_id = str(get_tree().root.get_meta("selected_hero", "Lolo"))
 	model_path = str(HERO_MODEL_PATHS.get(_hero_id, FALLBACK_MODEL_PATH))
 	if not ResourceLoader.exists(model_path):
-		push_warning("CharacterLoader: model for %s is missing; using the available Louay rigged model." % _hero_id)
-		model_path = FALLBACK_MODEL_PATH
+		push_error("CharacterLoader: the independent GLB model for %s is missing. Refusing to substitute Louay." % _hero_id)
+		return
 	var scene := load(model_path) as PackedScene
 	if scene == null:
 		push_error("KnightVisual: failed to load " + model_path)
@@ -71,12 +71,9 @@ func _ready() -> void:
 
 func _apply_selected_hero_material() -> void:
 	var hero_id := str(get_tree().root.get_meta("selected_hero", "Lolo"))
-	var hero_colors := {
-		"Lolo": Color(0.12, 0.82, 0.38),
-		"Fady": Color(0.92, 0.16, 0.18),
-		"AlSayed": Color(0.12, 0.42, 0.96)
-	}
-	var hero_color: Color = hero_colors.get(hero_id, hero_colors["Lolo"])
+	if hero_id != "Lolo":
+		return
+	var hero_color := Color(0.12, 0.82, 0.38)
 	var material := StandardMaterial3D.new()
 	material.albedo_color = hero_color
 	material.roughness = 0.68
@@ -106,7 +103,7 @@ func _setup_bone_attachments() -> void:
 		_weapon_anchor = BoneAttachment3D.new()
 		_weapon_anchor.name = "WeaponHandAttachment"
 		_weapon_anchor.bone_name = hand_bone
-		skeleton.add_child(_weapon_anchor)
+		skeleton.add_child.call_deferred(_weapon_anchor)
 	_attack_arm_attachment = BoneAttachment3D.new()
 	_attack_arm_attachment.name = "AttackArmAttachment"
 	var arm_bone := "RightUpperArm"
@@ -114,7 +111,7 @@ func _setup_bone_attachments() -> void:
 		arm_bone = hand_bone
 	if skeleton.find_bone(arm_bone) >= 0:
 		_attack_arm_attachment.bone_name = arm_bone
-		skeleton.add_child(_attack_arm_attachment)
+		skeleton.add_child.call_deferred(_attack_arm_attachment)
 
 
 func get_weapon_anchor() -> Node3D:

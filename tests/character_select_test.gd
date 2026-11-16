@@ -31,10 +31,10 @@ func _run() -> void:
 		var preview := select.get_node_or_null(preview_name) as SubViewport
 		assert(preview != null, "Missing 3D preview " + preview_name)
 		var preview_meshes := preview.find_children("*", "MeshInstance3D", true, false)
-		assert(not preview_meshes.is_empty(), "Preview must contain the Louay model")
-		var preview_material := (preview_meshes[0] as MeshInstance3D).material_overlay as StandardMaterial3D
-		var expected_preview: Color = preview_colors[preview_name]
-		assert(preview_material != null and preview_material.albedo_color.is_equal_approx(Color(expected_preview.r, expected_preview.g, expected_preview.b, 0.16)), "Hero preview tint has the wrong color: " + preview_name)
+		if preview_name == "Preview_Lolo":
+			assert(not preview_meshes.is_empty(), "Louay preview must contain his own rigged model")
+		else:
+			assert(preview_meshes.is_empty(), "Missing hero models must not be replaced with a recolored Louay model: " + preview_name)
 
 	hero_row.get_node("Btn_Lolo").pressed.emit()
 	await process_frame
@@ -110,21 +110,18 @@ func _run() -> void:
 		if candidate.material_overlay is StandardMaterial3D:
 			hero_mesh = candidate
 			break
-	assert(hero_mesh != null, "Character model should retain a texture-preserving tint overlay")
+	assert(hero_mesh != null, "Louay model should retain its own texture-preserving overlay")
 	var hero_material := hero_mesh.material_overlay as StandardMaterial3D
-	assert(hero_material != null and hero_material.albedo_color.is_equal_approx(Color(0.12, 0.82, 0.38, 0.16)), "Lolo must use the green texture-preserving tint")
+	assert(hero_material != null and hero_material.albedo_color.is_equal_approx(Color(0.12, 0.82, 0.38, 0.16)), "Louay must use the green texture-preserving tint")
 	root.set_meta("selected_hero", "Fady")
 	knight.call("_apply_selected_hero_material")
-	hero_material = hero_mesh.material_overlay as StandardMaterial3D
-	assert(hero_material.albedo_color.is_equal_approx(Color(0.92, 0.16, 0.18, 0.16)), "Fady must use the red material override")
+	assert(hero_mesh.material_overlay == hero_material, "Changing hero metadata must not recolor Louay into Fady")
 	root.set_meta("selected_hero", "AlSayed")
 	knight.call("_apply_selected_hero_material")
-	hero_material = (hero_meshes[0] as MeshInstance3D).material_override as StandardMaterial3D
-	assert(hero_material.albedo_color.is_equal_approx(Color(0.12, 0.42, 0.96, 0.16)), "AlSayed must use the blue material override")
+	assert(hero_mesh.material_overlay == hero_material, "Changing hero metadata must not recolor Louay into AlSayed")
 	root.set_meta("selected_hero", "Lolo")
 	knight.call("_apply_selected_hero_material")
-	hero_material = (hero_meshes[0] as MeshInstance3D).material_override as StandardMaterial3D
-	assert(hero_material.albedo_color.is_equal_approx(Color(0.12, 0.82, 0.38, 0.16)), "Lolo must remain green after switching back")
+	assert(hero_mesh.material_overlay == hero_material, "Louay's own material should remain stable")
 	assert(player.get_node("CollisionShape3D").shape is CapsuleShape3D, "Player must use a capsule collision shape")
 	assert(player.get_node_or_null("Visual") == null, "Old cylinder visual should be removed")
 	assert(knight.get_child_count() > 0, "Knight model should be instanced under KnightVisual")
