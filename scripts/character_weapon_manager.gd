@@ -77,9 +77,17 @@ func _build_weapon_visual(definition: Dictionary) -> void:
 		_visual.queue_free()
 	_visual = Node3D.new()
 	_visual.name = "EquippedWeaponVisual"
-	_visual.position = Vector3(0.58, 1.02, -0.12)
+	_visual.position = Vector3(0.02, -0.04, -0.12)
 	_visual.rotation_degrees = Vector3(0.0, 0.0, -18.0)
-	add_child(_visual)
+	var character_loader := _player.get_node_or_null("KnightVisual")
+	var hand_anchor: Node3D
+	if character_loader != null and character_loader.has_method("get_weapon_anchor"):
+		hand_anchor = character_loader.call("get_weapon_anchor") as Node3D
+	if is_instance_valid(hand_anchor):
+		hand_anchor.add_child(_visual)
+	else:
+		_visual.position = Vector3(0.58, 1.02, -0.12)
+		add_child(_visual)
 	var material := StandardMaterial3D.new()
 	material.albedo_color = definition["color"]
 	material.metallic = 0.72

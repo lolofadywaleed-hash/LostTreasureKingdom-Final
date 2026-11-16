@@ -13,6 +13,9 @@ const FALLBACK_MODEL_PATH := "res://assets/models/louay_rigged_animated.glb"
 var model_path: String = FALLBACK_MODEL_PATH
 var _hero_id: String = "Lolo"
 var _action_animation_remaining: float = 0.0
+var _weapon_anchor: BoneAttachment3D
+var _attack_arm_attachment: BoneAttachment3D
+var _attack_tween: Tween
 ## KayKit/glTF غالباً يواجه +Z بينما اتجاه الأمام في Godot هو -Z، لذلك 180 افتراضياً.
 @export var face_rotation_deg: float = 180.0
 ## 0 = يأخذ الارتفاع تلقائياً من CollisionShape3D
@@ -62,6 +65,7 @@ func _ready() -> void:
 	_apply_selected_hero_material()
 	_hide_old_visual()
 	_fit_to_collision()
+	_setup_bone_attachments()
 	_setup_animations()
 
 
@@ -85,6 +89,47 @@ func _apply_selected_hero_material() -> void:
 		(item as MeshInstance3D).material_overlay = material
 		count += 1
 	_log("hero material applied: %s (%d mesh instances)" % [hero_id, count])
+
+
+func _setup_bone_attachments() -> void:
+	var skeletons := _model.find_children("*", "Skeleton3D", true, false)
+	if skeletons.is_empty():
+		push_warning("CharacterLoader: no Skeleton3D found; weapons will use the player fallback anchor.")
+		return
+	var skeleton := skeletons[0] as Skeleton3D
+	var hand_bone := "RightHand"
+	if skeleton.find_bone(hand_bone) < 0:
+		hand_bone = "RightLowerArm"
+	if skeleton.find_bone(hand_bone) >= 0:
+		_weapon_anchor = BoneAttachment3D.new()
+		_weapon_anchor.name = "WeaponHandAttachment"
+		_weapon_anchor.bone_name = hand_bone
+		skeleton.add_child(_weapon_anchor)
+	_attack_arm_attachment = BoneAttachment3D.new()
+	_attack_arm_attachment.name = "AttackArmAttachment"
+	var arm_bone := "RightUpperArm"
+	if skeleton.find_bone(arm_bone) < 0:
+		arm_bone = hand_bone
+	if skeleton.find_bone(arm_bone) >= 0:
+		_attack_arm_attachment.bone_name = arm_bone
+		skeleton.add_child(_attack_arm_attachment)
+
+
+func get_weapon_anchor() -> Node3D:
+	return _weapon_anchor
+
+
+func _play_procedural_attack() -> void:
+	if not is_instance_valid(_attack_arm_attachment):
+		return
+	if _attack_tween != null and _attack_tween.is_valid():
+		_attack_tween.kill()
+	_attack_arm_attachment.rotation = Vector3.ZERO
+	_attack_tween = create_tween()
+	_attack_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_attack_tween.tween_property(_attack_arm_attachment, "rotation", Vector3(-0.75, 0.0, -1.05), 0.11)
+	_attack_tween.set_ease(Tween.EASE_IN_OUT)
+	_attack_tween.tween_property(_attack_arm_attachment, "rotation", Vector3.ZERO, 0.22)
 
 
 func _log(msg: String) -> void:
@@ -239,11 +284,13 @@ func _find_anim(names: PackedStringArray, keys: Array) -> String:
 
 
 func play_action_animation(animation_key: String, duration: float = 0.38) -> void:
-	if _anim == null:
+	if animation_key.to_lower() != "attack":
 		return
-	if animation_key.to_lower() == "attack" and str(_states.get("attack", "")) != "":
+	if _anim != null and str(_states.get("attack", "")) != "":
 		_action_animation_remaining = maxf(0.1, duration)
 		_play("attack")
+	else:
+		_play_procedural_attack()
 
 
 func _physics_process(delta: float) -> void:
@@ -278,7 +325,10 @@ func _play(state: String) -> void:
 		if _states.get(s, "") != "":
 			clip = _states[s]
 			break
-	if clip == "" or clip == _current:
+	if clip == "":
+		return
+	_anim.speed_scale = 1.45 if state == "run" and clip == str(_states.get("walk", "")) else 1.0
+	if clip == _current:
 		return
 	_current = clip
 	_anim.play(clip, blend_time)
