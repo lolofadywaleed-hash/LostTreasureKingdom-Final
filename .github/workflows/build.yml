@@ -46,6 +46,7 @@ jobs:
           godot --headless --path . --quit-after 3
           godot --headless --path . --script res://tests/smoke_test.gd
           godot --headless --path . --script res://tests/character_select_test.gd
+          godot --headless --path . --script res://tests/enemy_combat_test.gd
       - name: Export debug APK
         run: mkdir -p builds && godot --headless --verbose --export-debug "Android" builds/LostTreasureKingdom.apk
       - name: Verify APK

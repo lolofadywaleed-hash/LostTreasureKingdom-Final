@@ -77,7 +77,7 @@ func _build_enemy_visual() -> void:
 	head.rings = 5
 	_add_part("Head", head, armor, Vector3(0, 1.86, 0))
 
-	var horn := ConeMesh.new()
+	var horn := CylinderMesh.new()
 	horn.bottom_radius = 0.13
 	horn.top_radius = 0.015
 	horn.height = 0.48
