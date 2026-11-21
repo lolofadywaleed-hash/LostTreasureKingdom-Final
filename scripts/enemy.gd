@@ -1,6 +1,7 @@
 extends CharacterBody3D
-## Mobile fantasy enemy with a procedural low-poly silhouette.
-## Replace the generated visual with a licensed GLB later without changing its AI API.
+## Mobile fantasy enemy; keeps the existing AI/combat API and prefers a licensed Goblin model.
+
+const GOBLIN_MODEL_PATH := "res://assets/models/goblin-archer/GoblinPack_Free/glTF/Characters/Goblin_Archer.gltf"
 
 @export var move_speed: float = 2.2
 @export var gravity: float = 18.0
@@ -9,6 +10,7 @@ extends CharacterBody3D
 @export var attack_damage: int = 1
 @export var attack_cooldown: float = 1.4
 @export var max_health: int = 3
+@export var model_scale: float = 2.0
 
 var _health: int
 var _player: Node3D
@@ -16,6 +18,9 @@ var _can_attack := true
 var _visual_root: Node3D
 var _visual_time := 0.0
 var _visual_base_y := 0.0
+var _hit_flash_materials: Array[StandardMaterial3D] = []
+var _hit_flash_base_states: Array[Dictionary] = []
+var _hit_flash_tween: Tween
 
 
 func _ready() -> void:
@@ -23,6 +28,7 @@ func _ready() -> void:
 	_health = max_health
 	_ensure_collision()
 	_build_enemy_visual()
+	_cache_hit_flash_materials()
 	_add_hit_vfx()
 	_player = get_tree().get_first_node_in_group("player") as Node3D
 	if _player == null:
@@ -50,6 +56,20 @@ func _build_enemy_visual() -> void:
 	_visual_root.name = "Visual"
 	add_child(_visual_root)
 	_visual_base_y = 0.0
+	var goblin_scene := load(GOBLIN_MODEL_PATH) as PackedScene
+	if goblin_scene != null:
+		var goblin_model := goblin_scene.instantiate() as Node3D
+		if goblin_model != null:
+			goblin_model.name = "GoblinArcher"
+			goblin_model.scale = Vector3.ONE * model_scale
+			_visual_root.add_child(goblin_model)
+			var model_bounds := _model_aabb(goblin_model)
+			if model_bounds.size.y > 0.001:
+				goblin_model.position.y = -model_bounds.position.y * model_scale
+			return
+		push_warning("Goblin model could not be instantiated; using the procedural fallback.")
+	else:
+		push_warning("Goblin model failed to load; using the procedural fallback.")
 
 	var armor := _make_material(Color(0.19, 0.055, 0.075), 0.22, 0.72)
 	var armor_light := _make_material(Color(0.38, 0.09, 0.11), 0.35, 0.55)
@@ -113,6 +133,80 @@ func _build_enemy_visual() -> void:
 	leg.radial_segments = 7
 	_add_part("LeftLeg", leg, horn_material, Vector3(-0.21, 0.43, 0))
 	_add_part("RightLeg", leg, horn_material, Vector3(0.21, 0.43, 0))
+
+
+func _model_aabb(root_node: Node3D) -> AABB:
+	var result := AABB()
+	var found := false
+	for node in root_node.find_children("*", "MeshInstance3D", true, false):
+		var mesh_instance := node as MeshInstance3D
+		if mesh_instance.mesh == null:
+			continue
+		var relative_transform := root_node.global_transform.affine_inverse() * mesh_instance.global_transform
+		var mesh_bounds: AABB = relative_transform * mesh_instance.get_aabb()
+		if found:
+			result = result.merge(mesh_bounds)
+		else:
+			result = mesh_bounds
+			found = true
+	return result
+
+
+func _cache_hit_flash_materials() -> void:
+	_hit_flash_materials.clear()
+	_hit_flash_base_states.clear()
+	if _visual_root == null:
+		return
+	for node in _visual_root.find_children("*", "MeshInstance3D", true, false):
+		var mesh_instance := node as MeshInstance3D
+		if mesh_instance.mesh == null:
+			continue
+		if mesh_instance.material_override is StandardMaterial3D:
+			_cache_hit_flash_material(mesh_instance.material_override as StandardMaterial3D, mesh_instance)
+			continue
+		for surface in range(mesh_instance.mesh.get_surface_count()):
+			var active_material := mesh_instance.get_active_material(surface) as StandardMaterial3D
+			if active_material != null:
+				_cache_hit_flash_material(active_material, mesh_instance, surface)
+
+
+func _cache_hit_flash_material(source: StandardMaterial3D, mesh_instance: MeshInstance3D, surface: int = -1) -> void:
+	var material_copy := source.duplicate() as StandardMaterial3D
+	if material_copy == null:
+		return
+	if surface < 0:
+		mesh_instance.material_override = material_copy
+	else:
+		mesh_instance.set_surface_override_material(surface, material_copy)
+	_hit_flash_materials.append(material_copy)
+	_hit_flash_base_states.append({
+		"emission_enabled": material_copy.emission_enabled,
+		"emission": material_copy.emission,
+		"energy": material_copy.emission_energy_multiplier,
+	})
+
+
+func _flash_hit() -> void:
+	if _hit_flash_materials.is_empty():
+		return
+	if _hit_flash_tween != null and _hit_flash_tween.is_valid():
+		_hit_flash_tween.kill()
+	for material in _hit_flash_materials:
+		material.emission_enabled = true
+		material.emission = Color(1.0, 0.28, 0.12)
+		material.emission_energy_multiplier = 1.35
+	_hit_flash_tween = create_tween()
+	_hit_flash_tween.tween_interval(0.11)
+	_hit_flash_tween.tween_callback(_restore_hit_flash)
+
+
+func _restore_hit_flash() -> void:
+	for index in range(_hit_flash_materials.size()):
+		var material := _hit_flash_materials[index]
+		var state := _hit_flash_base_states[index]
+		material.emission_enabled = state["emission_enabled"]
+		material.emission = state["emission"]
+		material.emission_energy_multiplier = state["energy"]
 
 
 func _make_material(color: Color, metallic: float, roughness: float, emission: Color = Color.BLACK, emission_energy: float = 0.0) -> StandardMaterial3D:
@@ -183,7 +277,7 @@ func _attack_player() -> void:
 func _add_hit_vfx() -> void:
 	if get_node_or_null("HitSparks") != null:
 		return
-	var sparks := GPUParticles3D.new()
+	var sparks := CPUParticles3D.new()
 	sparks.name = "HitSparks"
 	sparks.amount = 18
 	sparks.lifetime = 0.38
@@ -191,21 +285,19 @@ func _add_hit_vfx() -> void:
 	sparks.explosiveness = 1.0
 	sparks.emitting = false
 	sparks.position.y = 1.0
-	var process_material := ParticleProcessMaterial.new()
-	process_material.direction = Vector3(0.0, 1.0, 0.0)
-	process_material.spread = 180.0
-	process_material.initial_velocity_min = 1.2
-	process_material.initial_velocity_max = 3.0
-	process_material.gravity = Vector3(0.0, -5.0, 0.0)
-	process_material.scale_min = 0.045
-	process_material.scale_max = 0.11
-	sparks.process_material = process_material
+	sparks.direction = Vector3(0.0, 1.0, 0.0)
+	sparks.spread = 180.0
+	sparks.initial_velocity_min = 1.2
+	sparks.initial_velocity_max = 3.0
+	sparks.gravity = Vector3(0.0, -5.0, 0.0)
+	sparks.scale_amount_min = 0.045
+	sparks.scale_amount_max = 0.11
 	var spark_mesh := SphereMesh.new()
 	spark_mesh.radius = 0.06
 	spark_mesh.height = 0.12
 	var spark_material := _make_material(Color(1.0, 0.48, 0.12), 0.0, 0.25, Color(1.0, 0.22, 0.04), 2.0)
 	spark_mesh.material = spark_material
-	sparks.draw_pass_1 = spark_mesh
+	sparks.mesh = spark_mesh
 	add_child(sparks)
 
 
@@ -232,7 +324,8 @@ func take_damage(amount: int = 1) -> void:
 		return
 	_health = maxi(0, _health - amount)
 	_show_damage(amount)
-	var sparks := get_node_or_null("HitSparks") as GPUParticles3D
+	_flash_hit()
+	var sparks := get_node_or_null("HitSparks") as CPUParticles3D
 	if sparks != null:
 		sparks.restart()
 		sparks.emitting = true
