@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=35 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/mobile_hud.tscn" id="2_hud"]
@@ -9,6 +9,16 @@
 [ext_resource type="Script" path="res://scripts/player_health.gd" id="7_health"]
 [ext_resource type="Script" path="res://scripts/attack.gd" id="8_attack"]
 [ext_resource type="Script" path="res://scripts/enemy.gd" id="9_enemy"]
+[ext_resource type="Texture2D" path="res://assets/textures/forest_grass.png" id="10_grass"]
+[ext_resource type="Texture2D" path="res://assets/textures/ground-dirt-03/GroundDirt03_1K_BaseColor.png" id="11_dirt_base"]
+[ext_resource type="Texture2D" path="res://assets/textures/ground-dirt-03/GroundDirt03_1K_Normal.png" id="12_dirt_normal"]
+[ext_resource type="Texture2D" path="res://assets/textures/ground-dirt-03/GroundDirt03_1K_Roughness.png" id="13_dirt_roughness"]
+[ext_resource type="Script" path="res://scripts/environment_visuals.gd" id="14_environment_visuals"]
+[ext_resource type="Script" path="res://scripts/audio_manager.gd" id="15_audio_manager"]
+[ext_resource type="AudioStream" path="res://assets/audio/fantasy_adventure_bgm.mp3" id="16_bgm"]
+[ext_resource type="AudioStream" path="res://assets/audio/sword_hit.mp3" id="17_attack_sfx"]
+[ext_resource type="AudioStream" path="res://assets/audio/coin_pickup.mp3" id="18_coin_sfx"]
+[ext_resource type="AudioStream" path="res://assets/audio/arcane_skill.mp3" id="19_skill_sfx"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial"]
 sky_top_color = Color(0.11, 0.34, 0.68, 1)
@@ -26,23 +36,29 @@ background_mode = 2
 sky = SubResource("Sky")
 ambient_light_source = 3
 ambient_light_color = Color(0.78, 0.84, 0.96, 1)
-ambient_light_energy = 0.85
+ambient_light_energy = 0.95
 tonemap_mode = 3
 glow_enabled = true
-glow_intensity = 0.8
-glow_bloom = 0.2
+glow_intensity = 0.62
+glow_bloom = 0.12
 fog_enabled = true
 fog_light_color = Color(0.48, 0.62, 0.78, 1)
-fog_density = 0.01
+fog_density = 0.006
 ssao_enabled = false
 
 [sub_resource type="StandardMaterial3D" id="GrassMaterial"]
-albedo_color = Color(0.18, 0.43, 0.16, 1)
-roughness = 1.0
+albedo_texture = ExtResource("10_grass")
+roughness = 0.96
+uv1_scale = Vector3(16, 16, 1)
 
 [sub_resource type="StandardMaterial3D" id="PathMaterial"]
-albedo_color = Color(0.48, 0.34, 0.2, 1)
+albedo_texture = ExtResource("11_dirt_base")
+roughness_texture = ExtResource("13_dirt_roughness")
+normal_enabled = true
+normal_scale = 0.38
+normal_texture = ExtResource("12_dirt_normal")
 roughness = 1.0
+uv1_scale = Vector3(2, 16, 1)
 
 [sub_resource type="StandardMaterial3D" id="CastleMaterial"]
 albedo_color = Color(0.68, 0.65, 0.57, 1)
@@ -86,13 +102,13 @@ environment = SubResource("Environment")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 rotation = Vector3(-0.82, -0.48, 0)
-light_color = Color(1.0, 0.78, 0.48, 1)
-light_energy = 1.45
+light_color = Color(1.0, 0.86, 0.68, 1)
+light_energy = 1.25
 shadow_enabled = true
-directional_shadow_max_distance = 60.0
+directional_shadow_max_distance = 55.0
 directional_shadow_mode = 2
-light_angular_distance = 1.5
-shadow_blur = 1.2
+light_angular_distance = 2.4
+shadow_blur = 1.5
 
 [node name="GrassFloor" type="CSGBox3D" parent="."]
 position = Vector3(0, -0.55, 0)
@@ -109,11 +125,13 @@ material = SubResource("PathMaterial")
 position = Vector3(0, 0, -39)
 
 [node name="CastleKeep" type="CSGBox3D" parent="Castle"]
+visible = false
 position = Vector3(0, 4, 0)
 size = Vector3(14, 8, 5)
 material = SubResource("CastleMaterial")
 
 [node name="WestTower" type="CSGCylinder3D" parent="Castle"]
+visible = false
 position = Vector3(-5.7, 6, 0)
 radius = 1.45
 height = 12
@@ -121,6 +139,7 @@ sides = 12
 material = SubResource("CastleMaterial")
 
 [node name="EastTower" type="CSGCylinder3D" parent="Castle"]
+visible = false
 position = Vector3(5.7, 6, 0)
 radius = 1.45
 height = 12
@@ -128,6 +147,7 @@ sides = 12
 material = SubResource("CastleMaterial")
 
 [node name="Gate" type="CSGBox3D" parent="Castle"]
+visible = false
 position = Vector3(0, 2, 2.58)
 size = Vector3(3.2, 4, 0.22)
 material = SubResource("PathMaterial")
@@ -137,6 +157,9 @@ material = SubResource("PathMaterial")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Castle/CastleCollision"]
 position = Vector3(0, 6, 0)
 shape = SubResource("CastleShape")
+
+[node name="EnvironmentVisuals" type="Node3D" parent="."]
+script = ExtResource("14_environment_visuals")
 
 [node name="Boundary" type="Node3D" parent="."]
 
@@ -199,16 +222,37 @@ script = ExtResource("9_enemy")
 
 [node name="MobileHUD" parent="." instance=ExtResource("2_hud")]
 
+[node name="AudioManager" type="Node" parent="."]
+script = ExtResource("15_audio_manager")
+
+[node name="Music" type="AudioStreamPlayer" parent="AudioManager"]
+stream = ExtResource("16_bgm")
+volume_db = -16.0
+
+[node name="AttackSFX" type="AudioStreamPlayer" parent="AudioManager"]
+stream = ExtResource("17_attack_sfx")
+volume_db = -5.0
+
+[node name="CoinSFX" type="AudioStreamPlayer" parent="AudioManager"]
+stream = ExtResource("18_coin_sfx")
+volume_db = -2.0
+
+[node name="SkillSFX" type="AudioStreamPlayer" parent="AudioManager"]
+stream = ExtResource("19_skill_sfx")
+volume_db = -8.0
+
 [node name="TreeWestNear" type="Node3D" parent="."]
 position = Vector3(-12, 0, 7)
 
 [node name="Trunk" type="CSGCylinder3D" parent="TreeWestNear"]
+visible = false
 position = Vector3(0, 1.6, 0)
 radius = 0.38
 height = 3.2
 material = SubResource("TrunkMaterial")
 
 [node name="Crown" type="CSGCylinder3D" parent="TreeWestNear"]
+visible = false
 position = Vector3(0, 4, 0)
 radius = 1.8
 height = 3.2
@@ -219,12 +263,14 @@ material = SubResource("LeafMaterial")
 position = Vector3(12, 0, 2)
 
 [node name="Trunk" type="CSGCylinder3D" parent="TreeEastNear"]
+visible = false
 position = Vector3(0, 1.6, 0)
 radius = 0.38
 height = 3.2
 material = SubResource("TrunkMaterial")
 
 [node name="Crown" type="CSGCylinder3D" parent="TreeEastNear"]
+visible = false
 position = Vector3(0, 4, 0)
 radius = 1.8
 height = 3.2
@@ -235,12 +281,14 @@ material = SubResource("LeafMaterial")
 position = Vector3(-14, 0, -13)
 
 [node name="Trunk" type="CSGCylinder3D" parent="TreeWestFar"]
+visible = false
 position = Vector3(0, 1.7, 0)
 radius = 0.4
 height = 3.4
 material = SubResource("TrunkMaterial")
 
 [node name="Crown" type="CSGCylinder3D" parent="TreeWestFar"]
+visible = false
 position = Vector3(0, 4.3, 0)
 radius = 1.9
 height = 3.4
@@ -251,12 +299,14 @@ material = SubResource("LeafMaterial")
 position = Vector3(14, 0, -18)
 
 [node name="Trunk" type="CSGCylinder3D" parent="TreeEastFar"]
+visible = false
 position = Vector3(0, 1.7, 0)
 radius = 0.4
 height = 3.4
 material = SubResource("TrunkMaterial")
 
 [node name="Crown" type="CSGCylinder3D" parent="TreeEastFar"]
+visible = false
 position = Vector3(0, 4.3, 0)
 radius = 1.9
 height = 3.4
@@ -264,12 +314,14 @@ sides = 10
 material = SubResource("LeafMaterial")
 
 [node name="RockWest" type="CSGBox3D" parent="."]
+visible = false
 position = Vector3(-7, 0.45, -4)
 rotation = Vector3(0.1, 0.35, 0.08)
 size = Vector3(1.8, 0.9, 1.35)
 material = SubResource("StoneMaterial")
 
 [node name="RockEast" type="CSGBox3D" parent="."]
+visible = false
 position = Vector3(7, 0.35, -24)
 rotation = Vector3(0.08, -0.2, -0.06)
 size = Vector3(1.5, 0.7, 1.2)
@@ -314,3 +366,6 @@ shape = SubResource("TreasureChestReachShape")
 
 [connection signal="coins_changed" from="Player" to="MobileHUD" method="update_coins"]
 [connection signal="jump_pressed" from="MobileHUD" to="Player" method="_on_jump_button_pressed"]
+[connection signal="attacked" from="Player" to="AudioManager" method="play_attack"]
+[connection signal="skill_used" from="Player" to="AudioManager" method="play_skill"]
+[connection signal="coins_changed" from="Player" to="AudioManager" method="on_coins_changed"]
