@@ -1,6 +1,8 @@
 extends Node3D
 ## Chapter one objective flow: key -> guardian -> chest -> castle gate.
 
+const CHAPTER_ONE_CINEMATIC := preload("res://scenes/chapter_one_cinematic.tscn")
+
 @onready var state: Node = $GameState
 @onready var player: CharacterBody3D = get_parent().get_node("Player")
 @onready var key: Area3D = get_parent().get_node("Collectibles/ForestKey")
@@ -11,6 +13,14 @@ extends Node3D
 var _objective_label: Label
 var _completion_layer: CanvasLayer
 var _objective_text := ""
+var _objective_layer: CanvasLayer
+var _cinematic: Node3D
+var _hud: CanvasLayer
+var _hud_was_visible := true
+var _objective_layer_was_visible := true
+var _player_physics_was_enabled := true
+var _player_input_was_enabled := true
+var _player_unhandled_input_was_enabled := true
 
 func _ready() -> void:
 	_build_objective_ui()
@@ -67,7 +77,53 @@ func _on_gate_opened() -> void:
 	state.chapter_complete = true
 	state.save_progress()
 	_update_objective()
+	_start_completion_cinematic()
+
+func _start_completion_cinematic() -> void:
+	if is_instance_valid(_cinematic):
+		return
+	_cinematic = CHAPTER_ONE_CINEMATIC.instantiate() as Node3D
+	if _cinematic == null or not _cinematic.has_signal("cinematic_finished"):
+		_show_completion()
+		return
+	_cinematic.connect("cinematic_finished", _on_cinematic_finished, CONNECT_ONE_SHOT)
+	var parent_scene := get_parent()
+	_hud = parent_scene.get_node_or_null("MobileHUD") as CanvasLayer
+	if is_instance_valid(_hud):
+		_hud_was_visible = _hud.visible
+		_hud.visible = false
+	if is_instance_valid(_objective_layer):
+		_objective_layer_was_visible = _objective_layer.visible
+		_objective_layer.visible = false
+	_player_physics_was_enabled = player.is_physics_processing()
+	_player_input_was_enabled = player.is_processing_input()
+	_player_unhandled_input_was_enabled = player.is_processing_unhandled_input()
+	player.set_physics_process(false)
+	player.set_process_input(false)
+	player.set_process_unhandled_input(false)
+	parent_scene.add_child(_cinematic)
+
+func _on_cinematic_finished(_skipped: bool) -> void:
+	if is_instance_valid(_cinematic):
+		_cinematic.queue_free()
+	_cinematic = null
+	if is_instance_valid(_hud):
+		_hud.visible = _hud_was_visible
+	if is_instance_valid(_objective_layer):
+		_objective_layer.visible = _objective_layer_was_visible
+	if is_instance_valid(player):
+		player.set_physics_process(_player_physics_was_enabled)
+		player.set_process_input(_player_input_was_enabled)
+		player.set_process_unhandled_input(_player_unhandled_input_was_enabled)
+		call_deferred("_restore_gameplay_camera")
 	_show_completion()
+
+func _restore_gameplay_camera() -> void:
+	if not is_instance_valid(player):
+		return
+	var gameplay_camera := player.get_node_or_null("CameraPivot/SpringArm3D/Camera3D") as Camera3D
+	if gameplay_camera != null:
+		gameplay_camera.make_current()
 
 
 func _on_coins_changed(total: int) -> void:
@@ -93,6 +149,7 @@ func _build_objective_ui() -> void:
 	layer.name = "ChapterObjectiveUI"
 	layer.layer = 15
 	add_child(layer)
+	_objective_layer = layer
 	var panel := PanelContainer.new()
 	panel.position = Vector2(220, 24)
 	panel.custom_minimum_size = Vector2(560, 54)

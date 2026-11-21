@@ -1,0 +1,338 @@
+[gd_scene load_steps=22 format=3]
+
+[ext_resource type="Script" path="res://scripts/chapter_one_cinematic.gd" id="1_cinematic"]
+
+[sub_resource type="Environment" id="CinematicEnvironment"]
+background_mode = 1
+background_color = Color(0.012, 0.02, 0.045, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.28, 0.34, 0.48, 1)
+ambient_light_energy = 0.55
+tonemap_mode = 3
+
+[sub_resource type="StandardMaterial3D" id="WallMaterial"]
+albedo_color = Color(0.27, 0.31, 0.34, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="CarvedMaterial"]
+albedo_color = Color(0.10, 0.14, 0.19, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="GoldMaterial"]
+albedo_color = Color(0.95, 0.63, 0.16, 1)
+metallic = 0.52
+roughness = 0.36
+emission_enabled = true
+emission = Color(0.7, 0.34, 0.04, 1)
+emission_energy_multiplier = 0.45
+
+[sub_resource type="StandardMaterial3D" id="ShadowMaterial"]
+shading_mode = 0
+transparency = 1
+albedo_color = Color(0.10, 0.16, 0.28, 0.42)
+
+[sub_resource type="StandardMaterial3D" id="PlayerMaterial"]
+albedo_color = Color(0.16, 0.22, 0.30, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="WallPanelMesh"]
+size = Vector3(8.2, 5.4, 0.42)
+
+[sub_resource type="BoxMesh" id="WallTrimMesh"]
+size = Vector3(0.72, 5.8, 0.52)
+
+[sub_resource type="BoxMesh" id="CarvedStrokeMesh"]
+size = Vector3(1.25, 0.07, 0.08)
+
+[sub_resource type="CylinderMesh" id="CrownBandMesh"]
+top_radius = 0.42
+bottom_radius = 0.58
+height = 0.24
+radial_segments = 10
+
+[sub_resource type="BoxMesh" id="CrownShardMesh"]
+size = Vector3(0.16, 0.46, 0.15)
+
+[sub_resource type="SphereMesh" id="CrownGemMesh"]
+radial_segments = 8
+rings = 5
+radius = 0.16
+height = 0.32
+
+[sub_resource type="CapsuleMesh" id="PlayerBodyMesh"]
+radius = 0.31
+height = 1.38
+radial_segments = 8
+rings = 4
+
+[sub_resource type="SphereMesh" id="PlayerHeadMesh"]
+radial_segments = 8
+rings = 5
+radius = 0.23
+height = 0.46
+
+[sub_resource type="CapsuleMesh" id="ShadowBodyMesh"]
+radius = 0.36
+height = 1.9
+radial_segments = 8
+rings = 4
+
+[sub_resource type="SphereMesh" id="ShadowHeadMesh"]
+radial_segments = 8
+rings = 5
+radius = 0.28
+height = 0.56
+
+[sub_resource type="BoxMesh" id="GatePillarMesh"]
+size = Vector3(0.38, 3.25, 0.56)
+
+[sub_resource type="BoxMesh" id="GateHeaderMesh"]
+size = Vector3(3.8, 0.48, 0.62)
+
+[sub_resource type="BoxMesh" id="GateDoorMesh"]
+size = Vector3(2.95, 3.1, 0.22)
+
+[sub_resource type="StyleBoxFlat" id="CaptionPanelStyle"]
+bg_color = Color(0.015, 0.025, 0.045, 0.82)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.67, 0.53, 0.28, 0.85)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 18.0
+content_margin_top = 10.0
+content_margin_right = 18.0
+content_margin_bottom = 10.0
+
+[node name="ChapterOneCinematic" type="Node3D"]
+script = ExtResource("1_cinematic")
+
+[node name="CinematicCamera" type="Camera3D" parent="."]
+current = true
+cull_mask = 2
+environment = SubResource("CinematicEnvironment")
+position = Vector3(0, 3.1, 10.2)
+rotation = Vector3(-0.13, 0, 0)
+fov = 56.0
+
+[node name="PlayerTarget" type="Node3D" parent="."]
+position = Vector3(0, 0, 1.35)
+
+[node name="Body" type="MeshInstance3D" parent="PlayerTarget"]
+layers = 2
+position = Vector3(0, 1.0, 0)
+mesh = SubResource("PlayerBodyMesh")
+material_override = SubResource("PlayerMaterial")
+
+[node name="Head" type="MeshInstance3D" parent="PlayerTarget"]
+layers = 2
+position = Vector3(0, 1.88, 0)
+mesh = SubResource("PlayerHeadMesh")
+material_override = SubResource("GoldMaterial")
+
+[node name="CrownFragment" type="Node3D" parent="."]
+position = Vector3(0, 2.72, -3.25)
+
+[node name="Band" type="MeshInstance3D" parent="CrownFragment"]
+layers = 2
+mesh = SubResource("CrownBandMesh")
+material_override = SubResource("GoldMaterial")
+
+[node name="ShardLeft" type="MeshInstance3D" parent="CrownFragment"]
+layers = 2
+position = Vector3(-0.32, 0.3, 0)
+rotation = Vector3(0, 0, 0.32)
+mesh = SubResource("CrownShardMesh")
+material_override = SubResource("GoldMaterial")
+
+[node name="ShardCenter" type="MeshInstance3D" parent="CrownFragment"]
+layers = 2
+position = Vector3(0, 0.34, 0)
+mesh = SubResource("CrownShardMesh")
+material_override = SubResource("GoldMaterial")
+
+[node name="ShardRight" type="MeshInstance3D" parent="CrownFragment"]
+layers = 2
+position = Vector3(0.32, 0.3, 0)
+rotation = Vector3(0, 0, -0.32)
+mesh = SubResource("CrownShardMesh")
+material_override = SubResource("GoldMaterial")
+
+[node name="CrownGem" type="MeshInstance3D" parent="CrownFragment"]
+layers = 2
+position = Vector3(0, 0.05, 0.18)
+mesh = SubResource("CrownGemMesh")
+material_override = SubResource("GoldMaterial")
+
+[node name="CarvedWall" type="Node3D" parent="."]
+position = Vector3(0, 0, -6.2)
+
+[node name="WallPanel" type="MeshInstance3D" parent="CarvedWall"]
+layers = 2
+position = Vector3(0, 2.6, 0)
+mesh = SubResource("WallPanelMesh")
+material_override = SubResource("WallMaterial")
+
+[node name="WestTrim" type="MeshInstance3D" parent="CarvedWall"]
+layers = 2
+position = Vector3(-4.2, 2.6, 0.05)
+mesh = SubResource("WallTrimMesh")
+material_override = SubResource("WallMaterial")
+
+[node name="EastTrim" type="MeshInstance3D" parent="CarvedWall"]
+layers = 2
+position = Vector3(4.2, 2.6, 0.05)
+mesh = SubResource("WallTrimMesh")
+material_override = SubResource("WallMaterial")
+
+[node name="CarvingUpper" type="MeshInstance3D" parent="CarvedWall"]
+layers = 2
+position = Vector3(-2.45, 3.35, 0.24)
+mesh = SubResource("CarvedStrokeMesh")
+material_override = SubResource("CarvedMaterial")
+
+[node name="CarvingMiddle" type="MeshInstance3D" parent="CarvedWall"]
+layers = 2
+position = Vector3(-2.45, 2.6, 0.24)
+mesh = SubResource("CarvedStrokeMesh")
+material_override = SubResource("CarvedMaterial")
+
+[node name="CarvingLower" type="MeshInstance3D" parent="CarvedWall"]
+layers = 2
+position = Vector3(-2.45, 1.85, 0.24)
+mesh = SubResource("CarvedStrokeMesh")
+material_override = SubResource("CarvedMaterial")
+
+[node name="MemoryShadow" type="Node3D" parent="."]
+position = Vector3(-2.8, 0, -3.8)
+
+[node name="Body" type="MeshInstance3D" parent="MemoryShadow"]
+layers = 2
+position = Vector3(0, 1.02, 0)
+mesh = SubResource("ShadowBodyMesh")
+material_override = SubResource("ShadowMaterial")
+
+[node name="Head" type="MeshInstance3D" parent="MemoryShadow"]
+layers = 2
+position = Vector3(0, 2.1, 0)
+mesh = SubResource("ShadowHeadMesh")
+material_override = SubResource("ShadowMaterial")
+
+[node name="InnerGate" type="Node3D" parent="."]
+position = Vector3(0, 0, -5.5)
+
+[node name="WestPillar" type="MeshInstance3D" parent="InnerGate"]
+layers = 2
+position = Vector3(-1.65, 1.62, 0)
+mesh = SubResource("GatePillarMesh")
+material_override = SubResource("WallMaterial")
+
+[node name="EastPillar" type="MeshInstance3D" parent="InnerGate"]
+layers = 2
+position = Vector3(1.65, 1.62, 0)
+mesh = SubResource("GatePillarMesh")
+material_override = SubResource("WallMaterial")
+
+[node name="Header" type="MeshInstance3D" parent="InnerGate"]
+layers = 2
+position = Vector3(0, 3.25, 0)
+mesh = SubResource("GateHeaderMesh")
+material_override = SubResource("WallMaterial")
+
+[node name="Door" type="Node3D" parent="InnerGate"]
+position = Vector3(0, 1.55, 0.12)
+
+[node name="DoorPanel" type="MeshInstance3D" parent="InnerGate/Door"]
+layers = 2
+mesh = SubResource("GateDoorMesh")
+material_override = SubResource("CarvedMaterial")
+
+[node name="LightRig" type="Node3D" parent="."]
+
+[node name="KeyLight" type="DirectionalLight3D" parent="LightRig"]
+rotation = Vector3(-0.55, 0.4, 0)
+light_color = Color(0.72, 0.82, 1, 1)
+light_energy = 0.55
+shadow_enabled = false
+cull_mask = 2
+
+[node name="CrownGlow" type="OmniLight3D" parent="LightRig"]
+position = Vector3(0, 3.0, -2.7)
+light_color = Color(1, 0.65, 0.22, 1)
+light_energy = 0.25
+omni_range = 6.0
+shadow_enabled = false
+cull_mask = 2
+
+[node name="CaptionLayer" type="CanvasLayer" parent="."]
+layer = 100
+
+[node name="CaptionRoot" type="Control" parent="CaptionLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TitleLabel" type="Label" parent="CaptionLayer/CaptionRoot"]
+layout_mode = 1
+anchors_preset = 10
+anchor_left = 0.1
+anchor_top = 0.035
+anchor_right = 0.9
+anchor_bottom = 0.16
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.84, 0.55, 1)
+theme_override_font_sizes/font_size = 30
+text = "THE KINGDOM REMEMBERS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CaptionPanel" type="Panel" parent="CaptionLayer/CaptionRoot"]
+layout_mode = 1
+anchors_preset = 0
+anchor_left = 0.08
+anchor_top = 0.76
+anchor_right = 0.92
+anchor_bottom = 0.94
+mouse_filter = 2
+theme_override_styles/panel = SubResource("CaptionPanelStyle")
+
+[node name="CaptionLabel" type="Label" parent="CaptionLayer/CaptionRoot/CaptionPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.94, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Beyond the opened gate, an older secret stirs."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SkipButton" type="Button" parent="CaptionLayer/CaptionRoot"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -156.0
+offset_top = 28.0
+offset_right = -28.0
+offset_bottom = 88.0
+grow_horizontal = 0
+focus_mode = 0
+mouse_filter = 0
+text = "SKIP"
+theme_override_font_sizes/font_size = 24
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+root_node = NodePath("..")
