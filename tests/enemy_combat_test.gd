@@ -27,6 +27,8 @@ func _run() -> void:
 	if enemy.get_script() == null or not enemy.has_method("take_damage"):
 		_fail("Enemy gameplay script is not active")
 		return
+	if enemy.has_method("activate_encounter"):
+		enemy.activate_encounter()
 	if not enemy.get_node_or_null("CollisionShape3D") or not enemy.get_node("CollisionShape3D").shape is CapsuleShape3D:
 		_fail("Enemy collision capsule was not initialized")
 		return

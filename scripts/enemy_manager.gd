@@ -7,6 +7,7 @@ signal enemy_defeated(enemy: Node3D)
 
 @export var enemy_scene: PackedScene
 @export var spawn_positions: Array[Vector3] = []
+@export var guard_path: NodePath = ^"../Enemy"
 
 var _tracked_enemies: Array[Node3D] = []
 
@@ -16,6 +17,16 @@ func _ready() -> void:
 func _register_existing_enemies() -> void:
 	for node in get_tree().get_nodes_in_group("enemies"):
 		_register_enemy(node as Node3D)
+
+
+func activate_guard() -> Node3D:
+	var guard := get_node_or_null(guard_path) as Node3D
+	if guard == null:
+		return null
+	if guard.has_method("activate_encounter"):
+		guard.call("activate_encounter")
+	_register_enemy(guard)
+	return guard
 
 func _register_enemy(enemy: Node3D) -> void:
 	if enemy == null or _tracked_enemies.has(enemy):

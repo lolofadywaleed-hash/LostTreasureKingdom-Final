@@ -5,6 +5,7 @@ signal opened(reward: int)
 @export var reward_coins: int = 10
 @export var open_on_touch: bool = false
 @export var lid_open_angle_deg: float = 110.0
+@export var can_open: bool = true
 
 var _is_open := false
 var _player: Node3D = null
@@ -51,7 +52,7 @@ func _connect_area_signals() -> void:
 func _build_hint() -> void:
 	_hint = Label3D.new()
 	_hint.name = "Hint"
-	_hint.text = "Attack"
+	_hint.text = "Attack" if can_open else "Defeat the guardian"
 	_hint.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	_hint.no_depth_test = true
 	_hint.pixel_size = 0.01
@@ -65,6 +66,10 @@ func _on_body_entered(body: Node3D) -> void:
 	if _is_open or not body.has_method("add_coins"):
 		return
 	_player = body
+	if not can_open:
+		_hint.text = "Defeat the guardian"
+		_hint.visible = true
+		return
 	if open_on_touch:
 		_open()
 		return
@@ -81,10 +86,12 @@ func _on_body_exited(body: Node3D) -> void:
 	_hint.visible = false
 
 func _on_player_attacked() -> void:
+	if not can_open:
+		return
 	_open()
 
 func _open() -> void:
-	if _is_open:
+	if _is_open or not can_open:
 		return
 	_is_open = true
 	_hint.visible = false
@@ -102,3 +109,28 @@ func _open() -> void:
 		tween.tween_property(_lid_fallback, "rotation:x", -deg_to_rad(lid_open_angle_deg), 0.5) \
 			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	opened.emit(reward_coins)
+
+
+func set_unlocked(unlocked: bool) -> void:
+	can_open = unlocked
+	if _hint != null and not _is_open:
+		_hint.text = "Attack" if can_open else "Defeat the guardian"
+	if can_open and _player != null and _player.has_signal("attacked") and not _player.is_connected("attacked", _on_player_attacked):
+		_player.connect("attacked", _on_player_attacked)
+
+
+func restore_opened() -> void:
+	_is_open = true
+	can_open = true
+	if is_instance_valid(_area):
+		_area.set_deferred("monitoring", false)
+	if is_instance_valid(_hint):
+		_hint.visible = false
+	if is_instance_valid(_lid_fallback):
+		_lid_fallback.rotation.x = -deg_to_rad(lid_open_angle_deg)
+	elif _lid_animation != null and _lid_animation.has_animation("Chest_Open"):
+		_lid_animation.play("Chest_Open")
+
+
+func is_open() -> bool:
+	return _is_open

@@ -9,10 +9,12 @@ extends CharacterBody3D
 @export var attack_damage: int = 1
 @export var attack_cooldown: float = 1.4
 @export var max_health: int = 3
+@export var encounter_locked: bool = false
 
 var _health: int
 var _player: Node3D
 var _can_attack := true
+var encounter_active := true
 var _visual_root: Node3D
 var _visual_time := 0.0
 var _visual_base_y := 0.0
@@ -27,6 +29,28 @@ func _ready() -> void:
 	_player = get_tree().get_first_node_in_group("player") as Node3D
 	if _player == null:
 		_player = get_node_or_null("../Player") as Node3D
+	if encounter_locked:
+		_deactivate_encounter()
+	else:
+		activate_encounter()
+
+
+func _deactivate_encounter() -> void:
+	encounter_active = false
+	hide()
+	set_process(false)
+	set_physics_process(false)
+	remove_from_group("enemies")
+
+
+func activate_encounter() -> void:
+	encounter_locked = false
+	encounter_active = true
+	_health = max_health
+	show()
+	set_process(true)
+	set_physics_process(true)
+	add_to_group("enemies")
 
 
 func _ensure_collision() -> void:
@@ -144,6 +168,8 @@ func _process(delta: float) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if not encounter_active:
+		return
 	if not is_instance_valid(_player):
 		_player = get_tree().get_first_node_in_group("player") as Node3D
 		if _player == null:
@@ -228,7 +254,7 @@ func _show_damage(amount: int) -> void:
 
 
 func take_damage(amount: int = 1) -> void:
-	if amount <= 0 or _health <= 0:
+	if not encounter_active or amount <= 0 or _health <= 0:
 		return
 	_health = maxi(0, _health - amount)
 	_show_damage(amount)

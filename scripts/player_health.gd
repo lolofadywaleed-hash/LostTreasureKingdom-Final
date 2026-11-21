@@ -22,6 +22,11 @@ func _ready() -> void:
 	health_changed.emit(current_health, max_health)
 
 
+func _exit_tree() -> void:
+	if is_instance_valid(_hud_layer):
+		_hud_layer.queue_free()
+
+
 func configure_from_hero(hero_max_health: int) -> void:
 	max_health = clampi(hero_max_health, 1, 10)
 	current_health = max_health

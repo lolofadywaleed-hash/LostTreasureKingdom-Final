@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3]
+[gd_scene load_steps=32 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/mobile_hud.tscn" id="2_hud"]
@@ -11,6 +11,10 @@
 [ext_resource type="Script" path="res://scripts/enemy.gd" id="9_enemy"]
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="10_enemy_scene"]
 [ext_resource type="Script" path="res://scripts/enemy_manager.gd" id="11_enemy_manager"]
+[ext_resource type="Script" path="res://scripts/key.gd" id="12_key"]
+[ext_resource type="Script" path="res://scripts/chapter_one.gd" id="13_chapter"]
+[ext_resource type="Script" path="res://scripts/game_state.gd" id="14_game_state"]
+[ext_resource type="Script" path="res://scripts/gate.gd" id="15_gate"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial"]
 sky_top_color = Color(0.11, 0.34, 0.68, 1)
@@ -134,6 +138,9 @@ position = Vector3(0, 2, 2.58)
 size = Vector3(3.2, 4, 0.22)
 material = SubResource("PathMaterial")
 
+[node name="GateController" type="Node3D" parent="Castle"]
+script = ExtResource("15_gate")
+
 [node name="CastleCollision" type="StaticBody3D" parent="Castle"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Castle/CastleCollision"]
@@ -197,10 +204,17 @@ current = true
 
 [node name="Enemy" parent="." instance=ExtResource("10_enemy_scene")]
 position = Vector3(0, 0, -2)
+encounter_locked = true
 
 [node name="EnemyManager" type="Node3D" parent="."]
 script = ExtResource("11_enemy_manager")
 enemy_scene = ExtResource("10_enemy_scene")
+
+[node name="ChapterOne" type="Node3D" parent="."]
+script = ExtResource("13_chapter")
+
+[node name="GameState" type="Node" parent="ChapterOne"]
+script = ExtResource("14_game_state")
 
 [node name="MobileHUD" parent="." instance=ExtResource("2_hud")]
 
@@ -282,6 +296,10 @@ material = SubResource("StoneMaterial")
 
 [node name="Collectibles" type="Node3D" parent="."]
 
+[node name="ForestKey" type="Area3D" parent="Collectibles"]
+position = Vector3(0, 1, 4)
+script = ExtResource("12_key")
+
 [node name="Coin1" type="Area3D" parent="Collectibles"]
 position = Vector3(0, 1, 8)
 script = ExtResource("3_coin")
@@ -297,6 +315,7 @@ script = ExtResource("3_coin")
 [node name="TreasureChest" type="Node3D" parent="Collectibles"]
 position = Vector3(0, 0.35, -10)
 script = ExtResource("4_chest")
+can_open = false
 
 [node name="ChestModel" parent="Collectibles/TreasureChest" instance=ExtResource("5_chest_model")]
 position = Vector3(0, -0.33, 0)
