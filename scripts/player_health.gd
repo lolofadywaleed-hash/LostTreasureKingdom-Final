@@ -22,6 +22,13 @@ func _ready() -> void:
 	health_changed.emit(current_health, max_health)
 
 
+func configure_from_hero(hero_max_health: int) -> void:
+	max_health = clampi(hero_max_health, 1, 10)
+	current_health = max_health
+	_update_display()
+	health_changed.emit(current_health, max_health)
+
+
 func take_damage(amount: int = 1) -> void:
 	if current_health <= 0 or _invulnerable or amount <= 0:
 		return

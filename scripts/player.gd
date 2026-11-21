@@ -1,5 +1,7 @@
 extends CharacterBody3D
 
+const HERO_DATA_SCRIPT = preload("res://scripts/hero_data.gd")
+
 signal attacked
 signal skill_used
 signal coins_changed(total: int)
@@ -36,6 +38,7 @@ signal coins_changed(total: int)
 @onready var animation_player: AnimationPlayer = _find_animation_player()
 
 var selected_hero: String = "Lolo"
+var hero_profile: Dictionary = {}
 var coins_collected: int = 0
 var jump_requested: bool = false
 var camera_touch_index: int = -1
@@ -49,7 +52,8 @@ func _ready() -> void:
 	floor_snap_length = 0.25
 	_spawn_position = global_position
 	selected_hero = str(get_tree().root.get_meta("selected_hero", "Lolo"))
-	print("Selected hero: ", selected_hero)
+	_apply_hero_profile()
+	print("Selected hero: ", selected_hero, " / skill: ", hero_profile.get("skill_name", "Unknown"))
 	var visual_driver := get_node_or_null("KnightVisual")
 	if visual_driver != null:
 		visual_driver.set_physics_process(false)
@@ -62,7 +66,25 @@ func _ready() -> void:
 		_play_animation(idle_animation)
 		print("Louay AnimationPlayer found! Available animations: ", animation_player.get_animation_list())
 	else:
-		push_warning("AnimationPlayer was not found inside Louay model!")
+		push_warning("AnimationPlayer was not found inside the shared hero model!")
+
+
+func _apply_hero_profile() -> void:
+	selected_hero = selected_hero if HERO_DATA_SCRIPT.PROFILES.has(selected_hero) else HERO_DATA_SCRIPT.DEFAULT_HERO
+	hero_profile = HERO_DATA_SCRIPT.get_profile(selected_hero)
+	move_speed = float(hero_profile["move_speed"])
+	acceleration = float(hero_profile["acceleration"])
+	jump_velocity = float(hero_profile["jump_velocity"])
+	var health_system := get_node_or_null("HealthSystem")
+	if health_system != null and health_system.has_method("configure_from_hero"):
+		health_system.configure_from_hero(int(hero_profile["max_health"]))
+	var attack_system := get_node_or_null("AttackSystem")
+	if attack_system != null and attack_system.has_method("configure_from_hero"):
+		attack_system.configure_from_hero(hero_profile)
+
+
+func get_hero_profile() -> Dictionary:
+	return hero_profile.duplicate(true)
 
 
 func _find_animation_player() -> AnimationPlayer:

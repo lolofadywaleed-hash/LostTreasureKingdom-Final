@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=27 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/mobile_hud.tscn" id="2_hud"]
@@ -9,6 +9,8 @@
 [ext_resource type="Script" path="res://scripts/player_health.gd" id="7_health"]
 [ext_resource type="Script" path="res://scripts/attack.gd" id="8_attack"]
 [ext_resource type="Script" path="res://scripts/enemy.gd" id="9_enemy"]
+[ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="10_enemy_scene"]
+[ext_resource type="Script" path="res://scripts/enemy_manager.gd" id="11_enemy_manager"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial"]
 sky_top_color = Color(0.11, 0.34, 0.68, 1)
@@ -193,9 +195,12 @@ spring_length = 8.0
 [node name="Camera3D" type="Camera3D" parent="Player/CameraPivot/SpringArm3D"]
 current = true
 
-[node name="Enemy" type="CharacterBody3D" parent="."]
+[node name="Enemy" parent="." instance=ExtResource("10_enemy_scene")]
 position = Vector3(0, 0, -2)
-script = ExtResource("9_enemy")
+
+[node name="EnemyManager" type="Node3D" parent="."]
+script = ExtResource("11_enemy_manager")
+enemy_scene = ExtResource("10_enemy_scene")
 
 [node name="MobileHUD" parent="." instance=ExtResource("2_hud")]
 

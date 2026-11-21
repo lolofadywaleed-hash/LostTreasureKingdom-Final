@@ -8,6 +8,10 @@ extends Node
 
 var _player: CharacterBody3D
 var _ready_to_attack := true
+var _skill_ready := true
+var skill_damage: int = 2
+var skill_range: float = 3.2
+var skill_cooldown: float = 2.5
 
 
 func _ready() -> void:
@@ -17,6 +21,17 @@ func _ready() -> void:
 		return
 	if not _player.attacked.is_connected(_on_player_attacked):
 		_player.attacked.connect(_on_player_attacked)
+	if not _player.skill_used.is_connected(_on_skill_used):
+		_player.skill_used.connect(_on_skill_used)
+
+
+func configure_from_hero(profile: Dictionary) -> void:
+	damage = int(profile.get("attack_damage", damage))
+	attack_range = float(profile.get("attack_range", attack_range))
+	attack_cooldown = float(profile.get("attack_cooldown", attack_cooldown))
+	skill_damage = int(profile.get("skill_damage", skill_damage))
+	skill_range = float(profile.get("skill_range", skill_range))
+	skill_cooldown = float(profile.get("skill_cooldown", skill_cooldown))
 
 
 func _on_player_attacked() -> void:
@@ -50,3 +65,28 @@ func _hit_nearest_enemy() -> void:
 		best_enemy = node
 	if best_enemy != null:
 		best_enemy.call("take_damage", damage)
+
+
+func _on_skill_used() -> void:
+	if not _skill_ready or _player == null:
+		return
+	_skill_ready = false
+	_hit_skill_enemies()
+	await get_tree().create_timer(skill_cooldown).timeout
+	_skill_ready = true
+
+
+func _hit_skill_enemies() -> void:
+	var forward := -_player.global_transform.basis.z
+	forward.y = 0.0
+	forward = forward.normalized()
+	for node in get_tree().get_nodes_in_group("enemies"):
+		if not is_instance_valid(node) or not node is Node3D or not node.has_method("take_damage"):
+			continue
+		var offset: Vector3 = node.global_position - _player.global_position
+		var flat_offset := Vector3(offset.x, 0.0, offset.z)
+		if flat_offset.length() > skill_range or flat_offset.length() < 0.001:
+			continue
+		if forward.dot(flat_offset.normalized()) < -0.25:
+			continue
+		node.call("take_damage", skill_damage)

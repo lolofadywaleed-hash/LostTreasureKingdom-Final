@@ -1,5 +1,7 @@
 extends Control
 
+const HERO_DATA_SCRIPT = preload("res://scripts/hero_data.gd")
+
 func _ready() -> void:
 	var container := get_node_or_null("MarginContainer/VBoxContainer/HBoxContainer") as HBoxContainer
 	if container == null:
@@ -22,6 +24,10 @@ func _ready() -> void:
 		button.size_flags_vertical = 3
 		button.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_COVERED
 		button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		var profile: Dictionary = HERO_DATA_SCRIPT.get_profile(char_data["name"])
+		button.tooltip_text = "%s | HP %d | Speed %.1f | Skill: %s" % [
+			profile["display_name"], profile["max_health"], profile["move_speed"], profile["skill_name"]
+		]
 		button.pressed.connect(_on_character_pressed.bind(char_data["name"]))
 		container.add_child(button)
 
